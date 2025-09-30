@@ -87,7 +87,7 @@ import java.util.concurrent.TimeUnit;
 
 @TeleOp(name="help", group = "help")
 
-public class apirltag extends LinearOpMode {
+public class AprilTagTestTeleOp extends LinearOpMode {
 
     final double TURN_GAIN   =  0.01  ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
 
