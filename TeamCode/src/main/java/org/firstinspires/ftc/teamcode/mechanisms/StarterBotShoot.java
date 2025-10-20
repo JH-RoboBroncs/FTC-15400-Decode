@@ -19,10 +19,13 @@ public class StarterBotShoot {
         ticksPerRotation = motor.getMotorType().getTicksPerRev();
     }
 
-    public void shoot(double speed1, double speed2) {
-        motor.setPower(speed1);
-        servoOne.setPower(speed2);
-        servoTwo.setPower(speed2);
+    public void shoot(double speed) {
+        motor.setPower(speed);
+    }
+
+    public void load(double speed) {
+        servoOne.setPower(speed);
+        servoTwo.setPower(speed);
     }
 
 
