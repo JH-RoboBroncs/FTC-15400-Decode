@@ -17,7 +17,10 @@ public class StarterBotShoot {
         servoTwo = hwMap.get(CRServo.class, "servoTwo");
         motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         ticksPerRotation = motor.getMotorType().getTicksPerRev();
+
     }
+
+
 
     public void shoot(double speed) {
         motor.setPower(speed);
