@@ -88,14 +88,14 @@ public class SensorLimelight3A extends LinearOpMode {
     public void runOpMode() throws InterruptedException
     {
 
-        final double TURN_GAIN   =  0.01  ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
+        final double TURN_GAIN   =  0.25  ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
         final double MAX_AUTO_TURN  = 0.35;   //  Clip the turn speed to this max value (adjust for your robot)
 
 
-        frontLeftDrive = hardwareMap.get(DcMotor.class, "left_front_drive");
-        frontRightDrive = hardwareMap.get(DcMotor.class, "right_front_drive");
-        backLeftDrive = hardwareMap.get(DcMotor.class, "left_back_drive");
-        backRightDrive = hardwareMap.get(DcMotor.class, "right_back_drive");
+        frontLeftDrive = hardwareMap.get(DcMotor.class, "leftFront");
+        frontRightDrive = hardwareMap.get(DcMotor.class, "rightFront");
+        backLeftDrive = hardwareMap.get(DcMotor.class, "leftBack");
+        backRightDrive = hardwareMap.get(DcMotor.class, "rightBack");
 
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
 
@@ -117,12 +117,12 @@ public class SensorLimelight3A extends LinearOpMode {
 
             if (gamepad1.right_bumper && result.isValid()) {
                 double  headingError    = result.getTx(); //desiredTag.ftcPose.bearing;
-                turn   = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN) ;
+                turn   = -Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN) ;
 
             } else {
                 drive  = -gamepad1.left_stick_y  / 2.0;  // Reduce drive rate to 50%.
                 strafe = -gamepad1.left_stick_x  / 2.0;  // Reduce strafe rate to 50%.
-                turn   = -gamepad1.right_stick_x / 3.0;  // Reduce turn rate to 33%.
+                turn   = -gamepad1.right_stick_x / 2.0;  // Reduce turn rate to 33%.
             }
 
             moveRobot(drive, strafe, turn);
@@ -172,10 +172,10 @@ public class SensorLimelight3A extends LinearOpMode {
 
     public void moveRobot(double x, double y, double yaw) {
         // Calculate wheel powers.
-        double frontLeftPower    =  x - y - yaw;
-        double frontRightPower   =  x + y + yaw;
-        double backLeftPower     =  x + y - yaw;
-        double backRightPower    =  x - y + yaw;
+        double frontLeftPower    =  -x - y + yaw;
+        double frontRightPower   =  x - y + yaw;
+        double backLeftPower     =  -x + y + yaw;
+        double backRightPower    =  x + y + yaw;
 
         // Normalize wheel powers to be less than 1.0
         double max = Math.max(Math.abs(frontLeftPower), Math.abs(frontRightPower));

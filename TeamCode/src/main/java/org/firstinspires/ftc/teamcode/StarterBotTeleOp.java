@@ -22,8 +22,6 @@ public class StarterBotTeleOp extends LinearOpMode {
 
         waitForStart();
 
-        motor = hardwareMap.get(DcMotor.class, "shooter");
-
         while (opModeIsActive()) {
             drive.setDrivePowers(new PoseVelocity2d(
                     new Vector2d(
@@ -34,14 +32,17 @@ public class StarterBotTeleOp extends LinearOpMode {
             ));
 
             if (gamepad1.a){
-                shooter.shoot(1);
-            } else if (gamepad1.b) {
-                shooter.load(0.5);
-
+                shooter.shoot(0. );
+            } else {
+                shooter.shoot(0);
             }
 
-            telemetry.addData("Motor something", motor.getCurrentPosition());
-            telemetry.update();
+            if (gamepad1.b) {
+                shooter.load(0.5);
+                } else {
+                shooter.load(0);
+            }
+
         }
 
     }
