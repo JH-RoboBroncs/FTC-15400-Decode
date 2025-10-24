@@ -89,7 +89,7 @@ public class SensorLimelight3A extends LinearOpMode {
     {
 
         final double TURN_GAIN   =  0.25  ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
-        final double MAX_AUTO_TURN  = 0.35;   //  Clip the turn speed to this max value (adjust for your robot)
+        final double MAX_AUTO_TURN  = 0.75;   //  Clip the turn speed to this max value (adjust for your robot)
 
 
         frontLeftDrive = hardwareMap.get(DcMotor.class, "leftFront");
@@ -118,7 +118,8 @@ public class SensorLimelight3A extends LinearOpMode {
             if (gamepad1.right_bumper && result.isValid()) {
                 double  headingError    = result.getTx(); //desiredTag.ftcPose.bearing;
                 turn   = -Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN) ;
-
+                drive  = -gamepad1.left_stick_y  / 2.0;  // Reduce drive rate to 50%.
+                strafe = -gamepad1.left_stick_x  / 2.0;  // Reduce strafe rate to 50%.
             } else {
                 drive  = -gamepad1.left_stick_y  / 2.0;  // Reduce drive rate to 50%.
                 strafe = -gamepad1.left_stick_x  / 2.0;  // Reduce strafe rate to 50%.
