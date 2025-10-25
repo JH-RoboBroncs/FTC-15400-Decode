@@ -10,6 +10,7 @@ import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
+import com.qualcomm.hardware.limelightvision.LLStatus;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -18,7 +19,11 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.hardware.IMU;
 
+
+
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -36,6 +41,8 @@ public class TestSimpleAuto extends LinearOpMode {
     private DcMotor backRightDrive = null;  //  Used to control the right back drive wheel
 
     double  turn            = 0;
+    private IMU imu;
+
 
 
     public class AprilTagss {
@@ -108,11 +115,15 @@ public class TestSimpleAuto extends LinearOpMode {
         AprilTagss aprilTags = new AprilTagss();
 
         limelight.pipelineSwitch(0);
-
+        limelight.setPollRateHz(100);
         limelight.start();
 
 
+
         waitForStart();
+
+        imu = hardwareMap.get(IMU.class, "imu");
+
 
         /*while (opModeIsActive()) {
             LLResult result = limelight.getLatestResult();
@@ -134,6 +145,21 @@ public class TestSimpleAuto extends LinearOpMode {
             }
             telemetry.update();
         }*/
+
+        while (opModeIsActive()) {
+            LLResult result = limelight.getLatestResult();
+            // First, tell Limelight which way your robot is facing
+            double robotYaw = imu.getAngularOrientation().firstAngle;
+            limelight.updateRobotOrientation(robotYaw);
+            if (result != null && result.isValid()) {
+                Pose3D botpose_mt2 = result.getBotpose_MT2();
+                if (botpose_mt2 != null) {
+                    double x = botpose_mt2.getPosition().x;
+                    double y = botpose_mt2.getPosition().y;
+                    telemetry.addData("MT2 Location:", "(" + x + ", " + y + ")");
+                }
+            }
+        }
 
         Actions.runBlocking(
                 // new SequentialAction(
