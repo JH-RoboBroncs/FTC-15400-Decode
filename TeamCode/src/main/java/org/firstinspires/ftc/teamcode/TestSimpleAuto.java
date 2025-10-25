@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.ParallelAction;
+import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.hardware.limelightvision.LLResult;
@@ -30,6 +31,9 @@ import java.util.concurrent.TimeUnit;
 
 @Autonomous
 public class TestSimpleAuto extends LinearOpMode {
+
+    Pose2d initialPose = new Pose2d(0, 0, 0);
+    MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
 
     private Limelight3A limelight;
 
@@ -147,9 +151,10 @@ public class TestSimpleAuto extends LinearOpMode {
         }*/
 
         while (opModeIsActive()) {
+            drive.updatePoseEstimate();
             LLResult result = limelight.getLatestResult();
             // First, tell Limelight which way your robot is facing
-            double robotYaw = imu.getAngularOrientation().firstAngle;
+            double robotYaw = drive.poseEstimate().getHeading();
             limelight.updateRobotOrientation(robotYaw);
             if (result != null && result.isValid()) {
                 Pose3D botpose_mt2 = result.getBotpose_MT2();
