@@ -32,8 +32,7 @@ import java.util.concurrent.TimeUnit;
 @Autonomous
 public class TestSimpleAuto extends LinearOpMode {
 
-    Pose2d initialPose = new Pose2d(0, 0, 0);
-    MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
+
 
     private Limelight3A limelight;
 
@@ -58,6 +57,13 @@ public class TestSimpleAuto extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 LLResult result = limelight.getLatestResult();
+
+                Pose2d initialPose = new Pose2d(0, 0, 0);
+                MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
+
+                double robotYaw = drive.localizer.getPose().heading.toDouble();
+                limelight.updateRobotOrientation(robotYaw);
+
                 final double TURN_GAIN = 0.05;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
                 final double MAX_AUTO_TURN = 0.2;
                 //powers on motor, if it is not on
@@ -81,6 +87,13 @@ public class TestSimpleAuto extends LinearOpMode {
                                 moveRobot(0, 0, 0);
                             }
 
+                        } if (result.isValid()) {
+                            Pose3D botpose_mt2 = result.getBotpose_MT2();
+                            if (botpose_mt2 != null) {
+                                double x = botpose_mt2.getPosition().x;
+                                double y = botpose_mt2.getPosition().y;
+                                telemetry.addData("MT2 Location:", "(" + x + ", " + y + ")");
+                            }
                         }
                         telemetry.update();
                     }
@@ -98,7 +111,8 @@ public class TestSimpleAuto extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 LLResult result = limelight.getLatestResult();
-
+                Pose2d initialPose = new Pose2d(0, 0, 0);
+                MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
 
                 //powers on motor, if it is not on
                 if (!initialized) {
@@ -119,12 +133,12 @@ public class TestSimpleAuto extends LinearOpMode {
                             double y = botpose_mt2.getPosition().y;
                             telemetry.addData("MT2 Location:", "(" + x + ", " + y + ")");
                         }
+                        telemetry.update();
                     }
-                    telemetry.update();
+                    return true;
                 }
-                return true;
+                return false;
             }
-                //return false;
         }
 
 
@@ -159,7 +173,7 @@ public class TestSimpleAuto extends LinearOpMode {
         AprilTagss aprilTags = new AprilTagss();
 
         limelight.pipelineSwitch(0);
-        limelight.setPollRateHz(100);
+        //limelight.setPollRateHz(150);
         limelight.start();
 
         waitForStart();
@@ -191,8 +205,8 @@ public class TestSimpleAuto extends LinearOpMode {
                 // new SequentialAction(
                 // )
                 new ParallelAction(
-                        aprilTags.faceTag(),
-                        aprilTags.getPos()
+                        aprilTags.faceTag()
+                       // aprilTags.getPos()
                 )
         );
 
@@ -201,9 +215,9 @@ public class TestSimpleAuto extends LinearOpMode {
 
     public void moveRobot(double x, double y, double yaw) {
         // Calculate wheel powers.
-        double frontLeftPower = -x - y + yaw;
+        double frontLeftPower = -x - y - yaw;
         double frontRightPower = x - y + yaw;
-        double backLeftPower = -x + y + yaw;
+        double backLeftPower = -x + y - yaw;
         double backRightPower = x + y + yaw;
 
         // Normalize wheel powers to be less than 1.0
