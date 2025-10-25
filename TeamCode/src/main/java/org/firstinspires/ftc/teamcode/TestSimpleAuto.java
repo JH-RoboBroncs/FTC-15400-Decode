@@ -44,9 +44,8 @@ public class TestSimpleAuto extends LinearOpMode {
     private DcMotor backLeftDrive = null;  //  Used to control the left back drive wheel
     private DcMotor backRightDrive = null;  //  Used to control the right back drive wheel
 
-    double  turn            = 0;
+    double turn = 0;
     private IMU imu;
-
 
 
     public class AprilTagss {
@@ -59,10 +58,8 @@ public class TestSimpleAuto extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 LLResult result = limelight.getLatestResult();
-                final double TURN_GAIN   =  0.05  ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
-                final double MAX_AUTO_TURN  = 0.2;
-
-
+                final double TURN_GAIN = 0.05;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
+                final double MAX_AUTO_TURN = 0.2;
                 //powers on motor, if it is not on
                 if (!initialized) {
                     initialized = true;
@@ -75,13 +72,13 @@ public class TestSimpleAuto extends LinearOpMode {
                         List<LLResultTypes.FiducialResult> fiducialResults = result.getFiducialResults();
                         for (LLResultTypes.FiducialResult fr : fiducialResults) {
                             if (fr.getFiducialId() == 20 && Math.abs(result.getTx()) > 0.25) {
-                                double  headingError    = result.getTx(); //desiredTag.ftcPose.bearing;
-                                turn   = -Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN) ;
-                                moveRobot(0,0, turn);
+                                double headingError = result.getTx(); //desiredTag.ftcPose.bearing;
+                                turn = -Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN);
+                                moveRobot(0, 0, turn);
                                 telemetry.addData("Tag valid", fr.getFiducialId());
                             } else {
                                 telemetry.addLine("No Tag");
-                                moveRobot(0,0,0);
+                                moveRobot(0, 0, 0);
                             }
 
                         }
@@ -94,9 +91,52 @@ public class TestSimpleAuto extends LinearOpMode {
         }
 
 
+        public class getPosition implements Action {
+            private boolean initialized = false;
+
+            // actions are formatted via telemetry packets as below
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                LLResult result = limelight.getLatestResult();
+
+
+                //powers on motor, if it is not on
+                if (!initialized) {
+                    initialized = true;
+                }
+
+
+                while (opModeIsActive()) {
+                    drive.updatePoseEstimate();
+
+                    // First, tell Limelight which way your robot is facing
+                    double robotYaw = drive.localizer.getPose().heading.toDouble();
+                    limelight.updateRobotOrientation(robotYaw);
+                    if (result != null && result.isValid()) {
+                        Pose3D botpose_mt2 = result.getBotpose_MT2();
+                        if (botpose_mt2 != null) {
+                            double x = botpose_mt2.getPosition().x;
+                            double y = botpose_mt2.getPosition().y;
+                            telemetry.addData("MT2 Location:", "(" + x + ", " + y + ")");
+                        }
+                    }
+                    telemetry.update();
+                }
+                return true;
+            }
+                //return false;
+        }
+
+
+
+
         //turns these into actions to be used in actions.runblocking (question mark?)
         public Action faceTag() {
             return new TestSimpleAuto.AprilTagss.faceTag();
+        }
+
+        public Action getPos() {
+            return new TestSimpleAuto.AprilTagss.getPosition();
         }
 
     }
@@ -122,12 +162,7 @@ public class TestSimpleAuto extends LinearOpMode {
         limelight.setPollRateHz(100);
         limelight.start();
 
-
-
         waitForStart();
-
-        imu = hardwareMap.get(IMU.class, "imu");
-
 
         /*while (opModeIsActive()) {
             LLResult result = limelight.getLatestResult();
@@ -150,27 +185,14 @@ public class TestSimpleAuto extends LinearOpMode {
             telemetry.update();
         }*/
 
-        while (opModeIsActive()) {
-            drive.updatePoseEstimate();
-            LLResult result = limelight.getLatestResult();
-            // First, tell Limelight which way your robot is facing
-            double robotYaw = drive.getPose
-            limelight.updateRobotOrientation(robotYaw);
-            if (result != null && result.isValid()) {
-                Pose3D botpose_mt2 = result.getBotpose_MT2();
-                if (botpose_mt2 != null) {
-                    double x = botpose_mt2.getPosition().x;
-                    double y = botpose_mt2.getPosition().y;
-                    telemetry.addData("MT2 Location:", "(" + x + ", " + y + ")");
-                }
-            }
-        }
+
 
         Actions.runBlocking(
                 // new SequentialAction(
                 // )
                 new ParallelAction(
-                        aprilTags.faceTag()
+                        aprilTags.faceTag(),
+                        aprilTags.getPos()
                 )
         );
 
