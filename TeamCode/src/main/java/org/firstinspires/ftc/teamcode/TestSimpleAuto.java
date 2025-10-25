@@ -154,7 +154,7 @@ public class TestSimpleAuto extends LinearOpMode {
             drive.updatePoseEstimate();
             LLResult result = limelight.getLatestResult();
             // First, tell Limelight which way your robot is facing
-            double robotYaw = drive.poseEstimate().getHeading();
+            double robotYaw = drive.getPose
             limelight.updateRobotOrientation(robotYaw);
             if (result != null && result.isValid()) {
                 Pose3D botpose_mt2 = result.getBotpose_MT2();
