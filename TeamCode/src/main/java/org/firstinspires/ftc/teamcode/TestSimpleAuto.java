@@ -82,9 +82,6 @@ public class TestSimpleAuto extends LinearOpMode {
                                 turn = -Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN);
                                 moveRobot(0, 0, turn);
                                 telemetry.addData("Tag valid", fr.getFiducialId());
-                            } else {
-                                telemetry.addLine("No Tag");
-                                moveRobot(0, 0, 0);
                             }
 
                         } if (result.isValid()) {
@@ -92,8 +89,14 @@ public class TestSimpleAuto extends LinearOpMode {
                             if (botpose_mt2 != null) {
                                 double x = botpose_mt2.getPosition().x;
                                 double y = botpose_mt2.getPosition().y;
+                                double heading = botpose_mt2.getOrientation().getPitch();
                                 telemetry.addData("MT2 Location:", "(" + x + ", " + y + ")");
+                                Pose2d mt2BotPos = new Pose2d(x, y, heading);
+                                telemetry.addData("Pose2d", mt2BotPos);
                             }
+                        } else {
+                            telemetry.addLine("No Tag");
+                            moveRobot(0, 0, 0);
                         }
                         telemetry.update();
                     }
