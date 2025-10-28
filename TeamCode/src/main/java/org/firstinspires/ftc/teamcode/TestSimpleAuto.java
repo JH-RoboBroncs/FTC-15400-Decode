@@ -61,8 +61,6 @@ public class TestSimpleAuto extends LinearOpMode {
                 Pose2d initialPose = new Pose2d(0, 0, 0);
                 MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
 
-                double robotYaw = drive.localizer.getPose().heading.toDouble();
-                limelight.updateRobotOrientation(robotYaw);
 
                 final double TURN_GAIN = 0.05;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
                 final double MAX_AUTO_TURN = 0.2;
@@ -73,6 +71,10 @@ public class TestSimpleAuto extends LinearOpMode {
 
 
                 while (opModeIsActive()) {
+
+                    drive.updatePoseEstimate();
+                    double robotYaw = drive.localizer.getPose().heading.toDouble();
+                    limelight.updateRobotOrientation(robotYaw);
 
                     if (result.isValid()) {
                         List<LLResultTypes.FiducialResult> fiducialResults = result.getFiducialResults();
@@ -86,12 +88,15 @@ public class TestSimpleAuto extends LinearOpMode {
 
                         } if (result.isValid()) {
                             Pose3D botpose_mt2 = result.getBotpose_MT2();
-                            if (botpose_mt2 != null) {
-                                double x = botpose_mt2.getPosition().x;
-                                double y = botpose_mt2.getPosition().y;
-                                double heading = botpose_mt2.getOrientation().getPitch();
-                                telemetry.addData("MT2 Location:", "(" + x + ", " + y + ")");
-                                Pose2d mt2BotPos = new Pose2d(x, y, heading);
+                            Pose3D botpose_mt1 = result.getBotpose();
+                                if (botpose_mt2 != null) {
+                                //double x = botpose_mt2.getPosition().x;
+                                //double y = botpose_mt2.getPosition().y;
+                                double x = botpose_mt1.getPosition().x;
+                                double y = botpose_mt1.getPosition().y;
+                                double heading = botpose_mt1.getOrientation().getYaw();
+                                telemetry.addData("MT1 Location:", "(" + x + ", " + y + ")");
+                                Pose2d mt2BotPos = new Pose2d(x *72, y*72, heading);
                                 telemetry.addData("Pose2d", mt2BotPos);
                             }
                         } else {

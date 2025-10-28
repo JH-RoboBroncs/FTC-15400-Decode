@@ -32,13 +32,13 @@ public class StarterBotTeleOp extends LinearOpMode {
             ));
 
             if (gamepad1.a){
-                shooter.shoot(0.5);
+                shooter.shoot(0.75);
             } else {
                 shooter.shoot(0);
             }
 
             if (gamepad1.b) {
-                shooter.load(0.5);
+                shooter.load(0.25);
                 } else {
                 shooter.load(0);
             }
