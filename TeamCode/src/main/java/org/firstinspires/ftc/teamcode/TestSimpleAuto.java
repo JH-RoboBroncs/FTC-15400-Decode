@@ -49,6 +49,9 @@ public class TestSimpleAuto extends LinearOpMode {
 
     public class AprilTagss {
 
+        double currentX;
+        double currentY;
+
 
         public class faceTag implements Action {
             private boolean initialized = false;
@@ -90,13 +93,16 @@ public class TestSimpleAuto extends LinearOpMode {
                             Pose3D botpose_mt2 = result.getBotpose_MT2();
                             Pose3D botpose_mt1 = result.getBotpose();
                                 if (botpose_mt2 != null) {
-                                //double x = botpose_mt2.getPosition().x;
-                                //double y = botpose_mt2.getPosition().y;
-                                double x = botpose_mt1.getPosition().x;
-                                double y = botpose_mt1.getPosition().y;
-                                double heading = botpose_mt1.getOrientation().getYaw();
+                                double x = botpose_mt2.getPosition().x;
+                                double y = botpose_mt2.getPosition().y;
+                                //double x = botpose_mt1.getPosition().x;
+                               // double y = botpose_mt1.getPosition().y;
+                                currentX = x;
+                                currentY = y;
+
+                                //double heading = botpose_mt1.getOrientation().getYaw();
                                 telemetry.addData("MT1 Location:", "(" + x + ", " + y + ")");
-                                Pose2d mt2BotPos = new Pose2d(x *72, y*72, heading);
+                                Pose2d mt2BotPos = new Pose2d(x *72, y*72, 0);
                                 telemetry.addData("Pose2d", mt2BotPos);
                             }
                         } else {
@@ -112,14 +118,14 @@ public class TestSimpleAuto extends LinearOpMode {
         }
 
 
-        public class getPosition implements Action {
+        public class moveTo implements Action {  // not working rn
             private boolean initialized = false;
 
             // actions are formatted via telemetry packets as below
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 LLResult result = limelight.getLatestResult();
-                Pose2d initialPose = new Pose2d(0, 0, 0);
+                Pose2d initialPose = new Pose2d(currentX, currentY, 0);
                 MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
 
                 //powers on motor, if it is not on
@@ -128,21 +134,14 @@ public class TestSimpleAuto extends LinearOpMode {
                 }
 
 
-                while (opModeIsActive()) {
+                while (opModeIsActive() && timer.seconds() > 5) {
                     drive.updatePoseEstimate();
+                    telemetry.addData("posevds", initialPose);
+                    telemetry.addData("current x", currentX);
+                    telemetry.addData("current y", currentY);
 
-                    // First, tell Limelight which way your robot is facing
-                    double robotYaw = drive.localizer.getPose().heading.toDouble();
-                    limelight.updateRobotOrientation(robotYaw);
-                    if (result != null && result.isValid()) {
-                        Pose3D botpose_mt2 = result.getBotpose_MT2();
-                        if (botpose_mt2 != null) {
-                            double x = botpose_mt2.getPosition().x;
-                            double y = botpose_mt2.getPosition().y;
-                            telemetry.addData("MT2 Location:", "(" + x + ", " + y + ")");
-                        }
                         telemetry.update();
-                    }
+
                     return true;
                 }
                 return false;
@@ -157,8 +156,8 @@ public class TestSimpleAuto extends LinearOpMode {
             return new TestSimpleAuto.AprilTagss.faceTag();
         }
 
-        public Action getPos() {
-            return new TestSimpleAuto.AprilTagss.getPosition();
+        public Action moveTo() {
+            return new TestSimpleAuto.AprilTagss.moveTo();
         }
 
     }
@@ -213,8 +212,8 @@ public class TestSimpleAuto extends LinearOpMode {
                 // new SequentialAction(
                 // )
                 new ParallelAction(
-                        aprilTags.faceTag()
-                       // aprilTags.getPos()
+                        aprilTags.faceTag(),
+                       aprilTags.moveTo()
                 )
         );
 
