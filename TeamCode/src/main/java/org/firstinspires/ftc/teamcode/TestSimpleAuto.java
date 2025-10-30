@@ -3,12 +3,14 @@ package org.firstinspires.ftc.teamcode;
 
 import androidx.annotation.NonNull;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.ftc.Actions;
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.LLStatus;
@@ -31,6 +33,11 @@ import java.util.concurrent.TimeUnit;
 
 @Autonomous
 public class TestSimpleAuto extends LinearOpMode {
+
+
+
+
+
 
 
 
@@ -65,6 +72,7 @@ public class TestSimpleAuto extends LinearOpMode {
                 MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
 
 
+
                 final double TURN_GAIN = 0.05;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
                 final double MAX_AUTO_TURN = 0.2;
                 //powers on motor, if it is not on
@@ -78,6 +86,7 @@ public class TestSimpleAuto extends LinearOpMode {
                     drive.updatePoseEstimate();
                     double robotYaw = drive.localizer.getPose().heading.toDouble();
                     limelight.updateRobotOrientation(robotYaw);
+
 
                     if (result.isValid()) {
                         List<LLResultTypes.FiducialResult> fiducialResults = result.getFiducialResults();
@@ -95,6 +104,8 @@ public class TestSimpleAuto extends LinearOpMode {
                                 if (botpose_mt2 != null) {
                                 double x = botpose_mt2.getPosition().x;
                                 double y = botpose_mt2.getPosition().y;
+                                double h = botpose_mt2.getOrientation().getYaw();
+
                                 //double x = botpose_mt1.getPosition().x;
                                // double y = botpose_mt1.getPosition().y;
                                 currentX = x;
@@ -103,12 +114,17 @@ public class TestSimpleAuto extends LinearOpMode {
                                 //double heading = botpose_mt1.getOrientation().getYaw();
                                 telemetry.addData("MT1 Location:", "(" + x + ", " + y + ")");
                                 Pose2d mt2BotPos = new Pose2d(x *72, y*72, 0);
-                                telemetry.addData("Pose2d", mt2BotPos);
+                                telemetry.addData("heading", h);
+                                    packet.fieldOverlay().setStroke("#3F51B5");
+                                    Drawing.drawRobot(packet.fieldOverlay(), mt2BotPos);
+                                    FtcDashboard.getInstance().sendTelemetryPacket(packet);
                             }
                         } else {
                             telemetry.addLine("No Tag");
                             moveRobot(0, 0, 0);
                         }
+
+
                         telemetry.update();
                     }
                     return true;
