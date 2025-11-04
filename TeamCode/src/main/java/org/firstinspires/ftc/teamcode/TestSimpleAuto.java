@@ -58,7 +58,8 @@ public class TestSimpleAuto extends LinearOpMode {
 
         double currentX;
         double currentY;
-
+        Pose2d initialPose = new Pose2d(0, 0, 0);
+        MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
 
         public class faceTag implements Action {
             private boolean initialized = false;
@@ -68,8 +69,7 @@ public class TestSimpleAuto extends LinearOpMode {
             public boolean run(@NonNull TelemetryPacket packet) {
                 LLResult result = limelight.getLatestResult();
 
-                Pose2d initialPose = new Pose2d(0, 0, 0);
-                MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
+
 
 
 
@@ -83,13 +83,14 @@ public class TestSimpleAuto extends LinearOpMode {
 
                 while (opModeIsActive()) {
 
-                    drive.updatePoseEstimate();
+
                     double robotYaw = drive.localizer.getPose().heading.toDouble();
                     limelight.updateRobotOrientation(robotYaw);
 
                     Pose2d mt2BotPos = new Pose2d(currentX *72, currentY*72, 0);
                     Pose2d pose = drive.localizer.getPose();
-                    telemetry.addData("heading", pose.heading.toDouble());
+                    telemetry.addData("heading (drive)", pose.heading.toDouble());
+
                     packet.fieldOverlay().setStroke("#3F51B5");
                     Drawing.drawRobot(packet.fieldOverlay(), mt2BotPos);
                     FtcDashboard.getInstance().sendTelemetryPacket(packet);
@@ -118,7 +119,7 @@ public class TestSimpleAuto extends LinearOpMode {
                                // double y = botpose_mt1.getPosition().y;
                                 currentX = x;
                                 currentY = y;
-
+                                    telemetry.addData("heading(limelight)", h);
                                 //double heading = botpose_mt1.getOrientation().getYaw();
                                 telemetry.addData("MT2 Location:", "(" + x + ", " + y + ")");
 
@@ -130,8 +131,10 @@ public class TestSimpleAuto extends LinearOpMode {
                         }
 
 
-                        telemetry.update();
+
                     }
+                    drive.updatePoseEstimate();
+                    telemetry.update();
                     return true;
                 }
                 return false;
