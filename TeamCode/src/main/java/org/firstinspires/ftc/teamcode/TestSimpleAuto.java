@@ -87,6 +87,13 @@ public class TestSimpleAuto extends LinearOpMode {
                     double robotYaw = drive.localizer.getPose().heading.toDouble();
                     limelight.updateRobotOrientation(robotYaw);
 
+                    Pose2d mt2BotPos = new Pose2d(currentX *72, currentY*72, 0);
+                    Pose2d pose = drive.localizer.getPose();
+                    telemetry.addData("heading", pose.heading.toDouble());
+                    packet.fieldOverlay().setStroke("#3F51B5");
+                    Drawing.drawRobot(packet.fieldOverlay(), mt2BotPos);
+                    FtcDashboard.getInstance().sendTelemetryPacket(packet);
+
 
                     if (result.isValid()) {
                         List<LLResultTypes.FiducialResult> fiducialResults = result.getFiducialResults();
@@ -101,7 +108,7 @@ public class TestSimpleAuto extends LinearOpMode {
                         } if (result.isValid()) {
                             Pose3D botpose_mt2 = result.getBotpose_MT2();
                             Pose3D botpose_mt1 = result.getBotpose();
-                            Pose2d pose = drive.localizer.getPose();
+
                                 if (botpose_mt2 != null) {
                                 double x = botpose_mt2.getPosition().x;
                                 double y = botpose_mt2.getPosition().y;
@@ -114,11 +121,8 @@ public class TestSimpleAuto extends LinearOpMode {
 
                                 //double heading = botpose_mt1.getOrientation().getYaw();
                                 telemetry.addData("MT2 Location:", "(" + x + ", " + y + ")");
-                                Pose2d mt2BotPos = new Pose2d(x *72, y*72, 0);
-                                telemetry.addData("heading", pose.heading.toDouble());
-                                    packet.fieldOverlay().setStroke("#3F51B5");
-                                    Drawing.drawRobot(packet.fieldOverlay(), mt2BotPos);
-                                    FtcDashboard.getInstance().sendTelemetryPacket(packet);
+
+
                             }
                         } else {
                             telemetry.addLine("No Tag");
