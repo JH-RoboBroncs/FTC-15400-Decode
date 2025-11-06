@@ -9,6 +9,8 @@ import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
+import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
+import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.limelightvision.LLResult;
@@ -34,13 +36,6 @@ import java.util.concurrent.TimeUnit;
 @Autonomous
 public class TestSimpleAuto extends LinearOpMode {
 
-
-
-
-
-
-
-
     private Limelight3A limelight;
 
     private ElapsedTime timer = new ElapsedTime();
@@ -52,14 +47,22 @@ public class TestSimpleAuto extends LinearOpMode {
 
     double turn = 0;
     private IMU imu;
+    double currentX;
+    double currentY;
 
+    Pose2d initialPose = new Pose2d(0, 0, 0);
+    MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
+
+
+    TrajectoryActionBuilder poo = drive.actionBuilder(initialPose)
+            .setTangent(0)
+            .splineToLinearHeading(new Pose2d(48, 48, 0), Math.PI / 2)
+            .waitSeconds(1);
 
     public class AprilTagss {
 
-        double currentX;
-        double currentY;
-        Pose2d initialPose = new Pose2d(0, 0, 0);
-        MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
+
+
 
 
         public class faceTag implements Action {
@@ -164,12 +167,16 @@ public class TestSimpleAuto extends LinearOpMode {
 
                 while (opModeIsActive() && timer.seconds() > 5) {
                     drive.updatePoseEstimate();
-                    telemetry.addData("posevds", initialPose);
+
+                    poo.build();
+                    if (timer.seconds() > 7) {
+                        poo.endTrajectory().fresh();
+                    }
+
+
                     telemetry.addData("current x", currentX);
                     telemetry.addData("current y", currentY);
-
-                        telemetry.update();
-
+                    telemetry.update();
                     return true;
                 }
                 return false;
@@ -211,6 +218,10 @@ public class TestSimpleAuto extends LinearOpMode {
         //limelight.setPollRateHz(150);
         limelight.start();
 
+
+
+
+
         waitForStart();
 
         /*while (opModeIsActive()) {
@@ -237,12 +248,14 @@ public class TestSimpleAuto extends LinearOpMode {
 
 
         Actions.runBlocking(
-                // new SequentialAction(
-                // )
-                new ParallelAction(
+                new SequentialAction(
+                        aprilTags.faceTag(),
+                        aprilTags.moveTo()
+                )
+                /*new ParallelAction(
                         aprilTags.faceTag(),
                        aprilTags.moveTo()
-                )
+                )*/
         );
 
 
