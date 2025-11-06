@@ -50,16 +50,13 @@ public class TestSimpleAuto extends LinearOpMode {
     double currentX;
     double currentY;
 
-    Pose2d initialPose = new Pose2d(0, 0, 0);
-    MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
 
 
-    TrajectoryActionBuilder poo = drive.actionBuilder(initialPose)
-            .setTangent(0)
-            .splineToLinearHeading(new Pose2d(48, 48, 0), Math.PI / 2)
-            .waitSeconds(1);
 
     public class AprilTagss {
+
+        Pose2d initialPose = new Pose2d(0, 0, 0);
+        MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
 
 
 
@@ -93,7 +90,7 @@ public class TestSimpleAuto extends LinearOpMode {
 
 
 
-                    Pose2d mt2BotPos = new Pose2d(currentX *72, currentY*72, 0);
+                    Pose2d mt2BotPos = new Pose2d(currentX *72, currentY*72, Math.toDegrees(robotYaw));
                     Pose2d pose = drive.localizer.getPose();
                     telemetry.addData("heading (drive)", Math.toDegrees(pose.heading.toDouble()));
 
@@ -126,9 +123,7 @@ public class TestSimpleAuto extends LinearOpMode {
                                // double y = botpose_mt1.getPosition().y;
                                 currentX = x;
                                 currentY = y;
-                                    telemetry.addData("heading(limelight)", h);
-                                //double heading = botpose_mt1.getOrientation().getYaw();
-                                telemetry.addData("MT2 Location:", "(" + x + ", " + y + ")");
+                                telemetry.addData("MT2 Location:", mt2BotPos);
 
 
                             }
@@ -156,8 +151,7 @@ public class TestSimpleAuto extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 LLResult result = limelight.getLatestResult();
-                Pose2d initialPose = new Pose2d(currentX, currentY, 0);
-                MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
+
 
                 //powers on motor, if it is not on
                 if (!initialized) {
@@ -166,12 +160,7 @@ public class TestSimpleAuto extends LinearOpMode {
 
 
                 while (opModeIsActive() && timer.seconds() > 5) {
-                    drive.updatePoseEstimate();
-
-                    poo.build();
-                    if (timer.seconds() > 7) {
-                        poo.endTrajectory().fresh();
-                    }
+                    //drive.updatePoseEstimate();
 
 
                     telemetry.addData("current x", currentX);
@@ -219,6 +208,15 @@ public class TestSimpleAuto extends LinearOpMode {
         limelight.start();
 
 
+        TrajectoryActionBuilder poo = aprilTags.drive.actionBuilder(aprilTags.initialPose)
+                .waitSeconds(1)
+                .setTangent(0)
+                .splineToLinearHeading(new Pose2d(48, 48, 0), Math.PI / 2)
+                .waitSeconds(2);
+        Action trajectoryActionCloseOut = poo.endTrajectory().fresh()
+                .waitSeconds(.5)
+                .strafeTo(new Vector2d(36, 47))
+                .build();
 
 
 
@@ -250,7 +248,10 @@ public class TestSimpleAuto extends LinearOpMode {
         Actions.runBlocking(
                 new SequentialAction(
                         aprilTags.faceTag(),
-                        aprilTags.moveTo()
+                        poo.build(),
+                        trajectoryActionCloseOut
+                        //aprilTags.moveTo()
+
                 )
                 /*new ParallelAction(
                         aprilTags.faceTag(),
