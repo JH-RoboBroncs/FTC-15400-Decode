@@ -61,6 +61,7 @@ public class TestSimpleAuto extends LinearOpMode {
         Pose2d initialPose = new Pose2d(0, 0, 0);
         MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
 
+
         public class faceTag implements Action {
             private boolean initialized = false;
 
@@ -85,11 +86,13 @@ public class TestSimpleAuto extends LinearOpMode {
 
 
                     double robotYaw = drive.localizer.getPose().heading.toDouble();
-                    limelight.updateRobotOrientation(robotYaw);
+                    limelight.updateRobotOrientation(Math.toDegrees(robotYaw));
+
+
 
                     Pose2d mt2BotPos = new Pose2d(currentX *72, currentY*72, 0);
                     Pose2d pose = drive.localizer.getPose();
-                    telemetry.addData("heading (drive)", pose.heading.toDouble());
+                    telemetry.addData("heading (drive)", Math.toDegrees(pose.heading.toDouble()));
 
                     packet.fieldOverlay().setStroke("#3F51B5");
                     Drawing.drawRobot(packet.fieldOverlay(), mt2BotPos);
@@ -109,6 +112,7 @@ public class TestSimpleAuto extends LinearOpMode {
                         } if (result.isValid()) {
                             Pose3D botpose_mt2 = result.getBotpose_MT2();
                             Pose3D botpose_mt1 = result.getBotpose();
+
 
                                 if (botpose_mt2 != null) {
                                 double x = botpose_mt2.getPosition().x;
