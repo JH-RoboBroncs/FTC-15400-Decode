@@ -12,16 +12,14 @@ import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
-import com.qualcomm.hardware.limelightvision.LLStatus;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.hardware.IMU;
@@ -31,7 +29,6 @@ import com.qualcomm.robotcore.hardware.IMU;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @Autonomous
 public class TestSimpleAuto extends LinearOpMode {
@@ -55,11 +52,22 @@ public class TestSimpleAuto extends LinearOpMode {
 
     public class AprilTagss {
 
-        Pose2d initialPose = new Pose2d(0, 0, 0);
+        Pose2d initialPose = new Pose2d(60, 0, 180); // real one is 60,0,180
         MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
 
 
 
+        private CRServo servoOne;
+        private CRServo servoTwo;
+        private DcMotor shooter;
+
+        public AprilTagss() {
+            servoOne = hardwareMap.get(CRServo.class, "servoOne");
+            servoTwo = hardwareMap.get(CRServo.class, "servoTwo");
+
+            shooter = hardwareMap.get(DcMotor.class, "shooter");
+            shooter.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        }
 
 
         public class faceTag implements Action {
@@ -70,20 +78,12 @@ public class TestSimpleAuto extends LinearOpMode {
             public boolean run(@NonNull TelemetryPacket packet) {
                 LLResult result = limelight.getLatestResult();
 
-
-
-
-
                 final double TURN_GAIN = 0.05;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
                 final double MAX_AUTO_TURN = 0.2;
                 //powers on motor, if it is not on
                 if (!initialized) {
                     initialized = true;
                 }
-
-
-                while (opModeIsActive()) {
-
 
                     double robotYaw = drive.localizer.getPose().heading.toDouble();
                     limelight.updateRobotOrientation(Math.toDegrees(robotYaw));
@@ -93,13 +93,13 @@ public class TestSimpleAuto extends LinearOpMode {
                     Pose2d mt2BotPos = new Pose2d(currentX *72, currentY*72, Math.toDegrees(robotYaw));
                     Pose2d pose = drive.localizer.getPose();
                     telemetry.addData("heading (drive)", Math.toDegrees(pose.heading.toDouble()));
-
                     packet.fieldOverlay().setStroke("#3F51B5");
                     Drawing.drawRobot(packet.fieldOverlay(), mt2BotPos);
+                Drawing.drawRobot(packet.fieldOverlay(), drive.localizer.getPose());
                     FtcDashboard.getInstance().sendTelemetryPacket(packet);
 
 
-                    if (result.isValid()) {
+                    /*if (result.isValid()) {
                         List<LLResultTypes.FiducialResult> fiducialResults = result.getFiducialResults();
                         for (LLResultTypes.FiducialResult fr : fiducialResults) {
                             if (fr.getFiducialId() == 20 && Math.abs(result.getTx()) > 0.25) {
@@ -109,22 +109,16 @@ public class TestSimpleAuto extends LinearOpMode {
                                 telemetry.addData("Tag valid", fr.getFiducialId());
                             }
 
-                        } if (result.isValid()) {
+                        } */if (result.isValid()) {
                             Pose3D botpose_mt2 = result.getBotpose_MT2();
-                            Pose3D botpose_mt1 = result.getBotpose();
-
 
                                 if (botpose_mt2 != null) {
                                 double x = botpose_mt2.getPosition().x;
                                 double y = botpose_mt2.getPosition().y;
                                 double h = botpose_mt2.getOrientation().getYaw();
-
-                                //double x = botpose_mt1.getPosition().x;
-                               // double y = botpose_mt1.getPosition().y;
                                 currentX = x;
                                 currentY = y;
                                 telemetry.addData("MT2 Location:", mt2BotPos);
-
 
                             }
                         } else {
@@ -132,43 +126,37 @@ public class TestSimpleAuto extends LinearOpMode {
                             moveRobot(0, 0, 0);
                         }
 
-
-
-                    }
                     drive.updatePoseEstimate();
                     telemetry.update();
                     return true;
-                }
-                return false;
             }
         }
 
 
-        public class moveTo implements Action {  // not working rn
+        public class shoot implements Action {  // not working rn
             private boolean initialized = false;
 
             // actions are formatted via telemetry packets as below
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-                LLResult result = limelight.getLatestResult();
+
 
 
                 //powers on motor, if it is not on
                 if (!initialized) {
+                    shooter.setPower(0);
+                    servoTwo.setPower(0);
+                    servoOne.setPower(0);
                     initialized = true;
                 }
 
-
-                while (opModeIsActive() && timer.seconds() > 5) {
-                    //drive.updatePoseEstimate();
-
-
-                    telemetry.addData("current x", currentX);
-                    telemetry.addData("current y", currentY);
-                    telemetry.update();
-                    return true;
+                if (timer.seconds() > 19 && timer.seconds() < 25) {
+                    shooter.setPower(0.5);
+                    servoOne.setPower(-0.25);
+                    servoTwo.setPower(0.25);
                 }
-                return false;
+
+                return true;
             }
         }
 
@@ -180,8 +168,8 @@ public class TestSimpleAuto extends LinearOpMode {
             return new TestSimpleAuto.AprilTagss.faceTag();
         }
 
-        public Action moveTo() {
-            return new TestSimpleAuto.AprilTagss.moveTo();
+        public Action shoot() {
+            return new TestSimpleAuto.AprilTagss.shoot();
         }
 
     }
@@ -211,11 +199,15 @@ public class TestSimpleAuto extends LinearOpMode {
         TrajectoryActionBuilder poo = aprilTags.drive.actionBuilder(aprilTags.initialPose)
                 .waitSeconds(1)
                 .setTangent(0)
-                .splineToLinearHeading(new Pose2d(48, 48, 0), Math.PI / 2)
-                .waitSeconds(2);
+                .splineToLinearHeading(new Pose2d(-50, -50, 45), Math.PI / 2);
+                //.stopAndAdd(aprilTags.shoot());
+
+                //.waitSeconds();
         Action trajectoryActionCloseOut = poo.endTrajectory().fresh()
-                .waitSeconds(.5)
-                .strafeTo(new Vector2d(36, 47))
+                //.waitSeconds(5)
+                .waitSeconds(7)
+                .splineToLinearHeading(new Pose2d(0,0,0), Math.PI / 2)
+                //.strafeTo(new Vector2d(36, 47))
                 .build();
 
 
@@ -246,13 +238,13 @@ public class TestSimpleAuto extends LinearOpMode {
 
 
         Actions.runBlocking(
-                new SequentialAction(
+                new ParallelAction(
                         aprilTags.faceTag(),
+                        aprilTags.shoot(),
+                new SequentialAction(
                         poo.build(),
                         trajectoryActionCloseOut
-                        //aprilTags.moveTo()
-
-                )
+                ))
                 /*new ParallelAction(
                         aprilTags.faceTag(),
                        aprilTags.moveTo()
