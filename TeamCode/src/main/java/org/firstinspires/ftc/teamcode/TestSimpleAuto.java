@@ -52,7 +52,7 @@ public class TestSimpleAuto extends LinearOpMode {
 
     public class AprilTagss {
 
-        Pose2d initialPose = new Pose2d(60, 0, 180); // real one is 60,0,180
+        Pose2d initialPose = new Pose2d(60, 0, Math.toRadians(180)); // real one is 60,0,180
         MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
 
 
@@ -86,16 +86,15 @@ public class TestSimpleAuto extends LinearOpMode {
                 }
 
                     double robotYaw = drive.localizer.getPose().heading.toDouble();
-                    limelight.updateRobotOrientation(Math.toDegrees(robotYaw));
+                    limelight.updateRobotOrientation(Math.toDegrees(-robotYaw));
 
 
 
-                    Pose2d mt2BotPos = new Pose2d(currentX *72, currentY*72, Math.toDegrees(robotYaw));
+                    Pose2d mt2BotPos = new Pose2d(currentX *72, currentY*72, robotYaw);
                     Pose2d pose = drive.localizer.getPose();
                     telemetry.addData("heading (drive)", Math.toDegrees(pose.heading.toDouble()));
                     packet.fieldOverlay().setStroke("#3F51B5");
                     Drawing.drawRobot(packet.fieldOverlay(), mt2BotPos);
-                Drawing.drawRobot(packet.fieldOverlay(), drive.localizer.getPose());
                     FtcDashboard.getInstance().sendTelemetryPacket(packet);
 
 
@@ -118,17 +117,18 @@ public class TestSimpleAuto extends LinearOpMode {
                                 double h = botpose_mt2.getOrientation().getYaw();
                                 currentX = x;
                                 currentY = y;
-                                telemetry.addData("MT2 Location:", mt2BotPos);
+                                Pose2d poopose = new Pose2d(currentX, currentY, robotYaw);
 
+                                telemetry.addData("MT2 Location:", poopose);
                             }
                         } else {
                             telemetry.addLine("No Tag");
-                            moveRobot(0, 0, 0);
+
                         }
 
                     drive.updatePoseEstimate();
                     telemetry.update();
-                    return true;
+                    return opModeIsActive();//true;
             }
         }
 
@@ -156,7 +156,7 @@ public class TestSimpleAuto extends LinearOpMode {
                     servoTwo.setPower(0.25);
                 }
 
-                return true;
+                return opModeIsActive(); //true;
             }
         }
 
