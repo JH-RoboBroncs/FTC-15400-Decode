@@ -52,8 +52,9 @@ public class TestSimpleAuto extends LinearOpMode {
 
     public class AprilTagss {
 
-        Pose2d initialPose = new Pose2d(60, 0, Math.toRadians(180)); // real one is 60,0,180
+        Pose2d initialPose = new Pose2d(60, 0, Math.toRadians(180));
         MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
+        Pose2d localizerPose = drive.localizer.getPose();
 
 
 
@@ -144,17 +145,36 @@ public class TestSimpleAuto extends LinearOpMode {
 
                 //powers on motor, if it is not on
                 if (!initialized) {
+                    initialized = true;
+                    timer.reset();
                     shooter.setPower(0);
                     servoTwo.setPower(0);
                     servoOne.setPower(0);
-                    initialized = true;
                 }
 
-                if (timer.seconds() > 19 && timer.seconds() < 25) {
-                    shooter.setPower(0.5);
-                    servoOne.setPower(-0.25);
-                    servoTwo.setPower(0.25);
+
+
+                if (timer.seconds() > 7 && timer.seconds() < 12) {
+                    shooter.setPower(0.55);
+                } else if (timer.seconds() > 7.5){
+                    servoOne.setPower(-0.2);
+                    servoTwo.setPower(0.2);
+                } if (timer.seconds() > 12){
+                    shooter.setPower(0);
+                    servoTwo.setPower(0);
+                    servoOne.setPower(0);
                 }
+
+
+                packet.fieldOverlay().setStroke("#3F51B5");
+                Drawing.drawRobot(packet.fieldOverlay(), localizerPose);
+                FtcDashboard.getInstance().sendTelemetryPacket(packet);
+
+                telemetry.addData("shooter power", shooter.getPower());
+                telemetry.addData("loader1 power", servoOne.getPower());
+                telemetry.addData("loader2 power", servoTwo.getPower());
+
+                telemetry.update();
 
                 return opModeIsActive(); //true;
             }
@@ -198,16 +218,14 @@ public class TestSimpleAuto extends LinearOpMode {
 
         TrajectoryActionBuilder poo = aprilTags.drive.actionBuilder(aprilTags.initialPose)
                 .waitSeconds(1)
-                .setTangent(0)
-                .splineToLinearHeading(new Pose2d(-50, -50, 45), Math.PI / 2);
-                //.stopAndAdd(aprilTags.shoot());
+                .setTangent(180)
+                //.splineToConstantHeading(new Vector2d(-50, -43), (3 * Math.PI / 2));
+               .splineToLinearHeading(new Pose2d(-55, -55 , Math.toRadians(225)), (3*Math.PI / 2));
 
-                //.waitSeconds();
+
         Action trajectoryActionCloseOut = poo.endTrajectory().fresh()
-                //.waitSeconds(5)
-                .waitSeconds(7)
+                .waitSeconds(8)
                 .splineToLinearHeading(new Pose2d(0,0,0), Math.PI / 2)
-                //.strafeTo(new Vector2d(36, 47))
                 .build();
 
 
@@ -238,17 +256,20 @@ public class TestSimpleAuto extends LinearOpMode {
 
 
         Actions.runBlocking(
-                new ParallelAction(
+               /* new ParallelAction(
                         aprilTags.faceTag(),
                         aprilTags.shoot(),
                 new SequentialAction(
                         poo.build(),
                         trajectoryActionCloseOut
+                ))*/
+
+                new ParallelAction(
+                        aprilTags.shoot(),
+                new SequentialAction(
+                        poo.build(),
+                        trajectoryActionCloseOut
                 ))
-                /*new ParallelAction(
-                        aprilTags.faceTag(),
-                       aprilTags.moveTo()
-                )*/
         );
 
 
