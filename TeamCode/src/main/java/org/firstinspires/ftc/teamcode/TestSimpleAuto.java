@@ -137,6 +137,9 @@ public class TestSimpleAuto extends LinearOpMode {
         public class shoot implements Action {  // not working rn
             private boolean initialized = false;
 
+            private int phase = 0;
+
+
             // actions are formatted via telemetry packets as below
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
@@ -152,17 +155,33 @@ public class TestSimpleAuto extends LinearOpMode {
                     servoOne.setPower(0);
                 }
 
-
-
-                if (timer.seconds() > 7 && timer.seconds() < 12) {
-                    shooter.setPower(0.55);
-                } else if (timer.seconds() > 7.5){
-                    servoOne.setPower(-0.2);
-                    servoTwo.setPower(0.2);
-                } if (timer.seconds() > 12){
+                if (timer.seconds() > 9 && timer.seconds() < 9.5) {
+                    shooter.setPower(0.45); //0.45
+                } else if (timer.seconds() > 5 && timer.seconds() < 12) {
+                    shooter.setPower(.4);
+                } else {
                     shooter.setPower(0);
-                    servoTwo.setPower(0);
-                    servoOne.setPower(0);
+                }
+
+                if ((timer.seconds() > 6 && timer.seconds() < 6.5) || (timer.seconds() > 7.5 && timer.seconds() < 8) || (timer.seconds() > 9 && timer.seconds() < 9.5)) {
+                    phase = 2; // load
+                } else {
+                    phase = 1; // idle
+                }
+
+
+                switch (phase){
+                    case 1: // waiting
+                        servoTwo.setPower(0);
+                        servoOne.setPower(0);
+                        break;
+                    case 2: //loading
+                        servoTwo.setPower(0.35);
+                        servoOne.setPower(-0.35);
+                        break;
+                    default:
+                        servoTwo.setPower(0);
+                        servoOne.setPower(0);
                 }
 
 
@@ -178,6 +197,7 @@ public class TestSimpleAuto extends LinearOpMode {
 
                 return opModeIsActive(); //true;
             }
+
         }
 
 
@@ -220,12 +240,12 @@ public class TestSimpleAuto extends LinearOpMode {
                 .waitSeconds(1)
                 .setTangent(180)
                 //.splineToConstantHeading(new Vector2d(-50, -43), (3 * Math.PI / 2));
-               .splineToLinearHeading(new Pose2d(-55, -55 , Math.toRadians(225)), (3*Math.PI / 2));
+               .splineToLinearHeading(new Pose2d(-55, -55 , Math.toRadians(230)), (3*Math.PI / 2));
 
 
         Action trajectoryActionCloseOut = poo.endTrajectory().fresh()
-                .waitSeconds(8)
-                .splineToLinearHeading(new Pose2d(0,0,0), Math.PI / 2)
+                .waitSeconds(9.5)
+                .splineToLinearHeading(new Pose2d(0,0,0), (3*Math.PI / 2))
                 .build();
 
 
@@ -300,5 +320,6 @@ public class TestSimpleAuto extends LinearOpMode {
         backLeftDrive.setPower(backLeftPower);
         backRightDrive.setPower(backRightPower);
     }
+
 
 }
