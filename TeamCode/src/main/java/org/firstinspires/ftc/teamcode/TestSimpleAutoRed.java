@@ -10,28 +10,21 @@ import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
-import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.hardware.limelightvision.LLResult;
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.hardware.IMU;
-
-
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 
-import java.util.List;
-
 @Autonomous
-public class TestSimpleAuto extends LinearOpMode {
+public class TestSimpleAutoRed extends LinearOpMode {
 
     private Limelight3A limelight;
 
@@ -52,7 +45,7 @@ public class TestSimpleAuto extends LinearOpMode {
 
     public class AprilTagss {
 
-        Pose2d initialPose = new Pose2d(60, -12, Math.toRadians(180));
+        Pose2d initialPose = new Pose2d(60, 12, Math.toRadians(180));
         MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
         Pose2d localizerPose = drive.localizer.getPose();
 
@@ -212,11 +205,11 @@ public class TestSimpleAuto extends LinearOpMode {
 
         //turns these into actions to be used in actions.runblocking (question mark?)
         public Action faceTag() {
-            return new TestSimpleAuto.AprilTagss.faceTag();
+            return new TestSimpleAutoRed.AprilTagss.faceTag();
         }
 
         public Action shoot() {
-            return new TestSimpleAuto.AprilTagss.shoot();
+            return new TestSimpleAutoRed.AprilTagss.shoot();
         }
 
     }
@@ -247,12 +240,12 @@ public class TestSimpleAuto extends LinearOpMode {
                 .waitSeconds(1)
                 .setTangent(180)
                 //.splineToConstantHeading(new Vector2d(-50, -43), (3 * Math.PI / 2));
-               .splineToLinearHeading(new Pose2d(-55, -55 , Math.toRadians(230)), (3*Math.PI / 2));
+               .splineToLinearHeading(new Pose2d(-55, 55 , Math.toRadians(130)), Math.PI / 2);
 
 
         Action trajectoryActionCloseOut = poo.endTrajectory().fresh()
                 .waitSeconds(9.5)
-                .splineToLinearHeading(new Pose2d(0,0,0), (3*Math.PI / 2)) // 60, -60, Math.toRadians(270)
+                .splineToLinearHeading(new Pose2d(60,-45,Math.toRadians(90)), (3*Math.PI / 2))
                 .build();
 
 
