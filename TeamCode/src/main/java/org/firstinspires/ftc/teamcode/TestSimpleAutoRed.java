@@ -126,18 +126,14 @@ public class TestSimpleAutoRed extends LinearOpMode {
             }
         }
 
-
         public class shoot implements Action {  // not working rn
             private boolean initialized = false;
 
             private int phase = 0;
 
-
             // actions are formatted via telemetry packets as below
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-
-
 
                 //powers on motor, if it is not on
                 if (!initialized) {
@@ -183,7 +179,6 @@ public class TestSimpleAutoRed extends LinearOpMode {
                         servoOne.setPower(0);
                 }
 
-
                 packet.fieldOverlay().setStroke("#3F51B5");
                 Drawing.drawRobot(packet.fieldOverlay(), localizerPose);
                 FtcDashboard.getInstance().sendTelemetryPacket(packet);
@@ -198,9 +193,6 @@ public class TestSimpleAutoRed extends LinearOpMode {
             }
 
         }
-
-
-
 
 
         //turns these into actions to be used in actions.runblocking (question mark?)
@@ -239,8 +231,7 @@ public class TestSimpleAutoRed extends LinearOpMode {
         TrajectoryActionBuilder poo = aprilTags.drive.actionBuilder(aprilTags.initialPose)
                 .waitSeconds(1)
                 .setTangent(180)
-                //.splineToConstantHeading(new Vector2d(-50, -43), (3 * Math.PI / 2));
-               .splineToLinearHeading(new Pose2d(-55, 55 , Math.toRadians(130)), Math.PI / 2);
+                .splineToLinearHeading(new Pose2d(-55, 55 , Math.toRadians(130)), Math.PI / 2);
 
 
         Action trajectoryActionCloseOut = poo.endTrajectory().fresh()

@@ -41,23 +41,25 @@ public class StarterBotTeleOp extends LinearOpMode {
         while (opModeIsActive()) {
             drive.setDrivePowers(new PoseVelocity2d(
                     new Vector2d(
-                            -gamepad1.left_stick_y,
-                            -gamepad1.left_stick_x
+                            -gamepad1.left_stick_y *0.85,
+                            -gamepad1.left_stick_x *0.85
                     ),
                     -gamepad1.right_stick_x
             ));
 
-            if (gamepad1.a){
-                shooter.shoot(0.475);
+            if (gamepad2.a){
+                shooter.shoot(.45);
             } else {
                 shooter.shoot(0);
             }
 
-            if (gamepad1.b) {
-                shooter.load(0.25);
+            if (gamepad2.b) {
+                shooter.load(.55);
                 } else {
                 shooter.load(0);
             }
+
+            shooter.brake(gamepad2.y);
 
             LLResult result = limelight.getLatestResult();
             double robotYaw = drive.localizer.getPose().heading.toDouble();

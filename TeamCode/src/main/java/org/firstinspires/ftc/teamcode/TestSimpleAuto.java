@@ -155,10 +155,10 @@ public class TestSimpleAuto extends LinearOpMode {
                     servoOne.setPower(0);
                 }
 
-                if (timer.seconds() > 6.25 && timer.seconds() < 10) {
+                if (timer.seconds() > 7.5 && timer.seconds() < 10) {
                     shooter.setPower(0.45); //0.45
-                } else if (timer.seconds() > 5 && timer.seconds() < 10) {
-                    shooter.setPower(.4);
+                } else if (timer.seconds() > 5.5 && timer.seconds() < 10) {
+                    shooter.setPower(0.45);
                 } else {
                     shooter.setPower(0);
                 }
@@ -178,12 +178,12 @@ public class TestSimpleAuto extends LinearOpMode {
                         servoOne.setPower(0);
                         break;
                     case 2: //loading
-                        servoTwo.setPower(0.65);
-                        servoOne.setPower(-0.65);
+                        servoTwo.setPower(0.7); //.65
+                        servoOne.setPower(-0.7);
                         break;
                     case 3: //loading
-                        servoTwo.setPower(0.75);
-                        servoOne.setPower(-0.75);
+                        servoTwo.setPower(0.8);
+                        servoOne.setPower(-0.8);
                         break;
                     default:
                         servoTwo.setPower(0);
@@ -194,7 +194,6 @@ public class TestSimpleAuto extends LinearOpMode {
                 packet.fieldOverlay().setStroke("#3F51B5");
                 Drawing.drawRobot(packet.fieldOverlay(), localizerPose);
                 FtcDashboard.getInstance().sendTelemetryPacket(packet);
-
                 telemetry.addData("shooter power", shooter.getPower());
                 telemetry.addData("loader1 power", servoOne.getPower());
                 telemetry.addData("loader2 power", servoTwo.getPower());
@@ -252,7 +251,7 @@ public class TestSimpleAuto extends LinearOpMode {
 
         Action trajectoryActionCloseOut = poo.endTrajectory().fresh()
                 .waitSeconds(9.5)
-                .splineToLinearHeading(new Pose2d(0,0,0), (3*Math.PI / 2)) // 60, -60, Math.toRadians(270)
+                .splineToLinearHeading(new Pose2d( 60, -45, Math.toRadians(270)), (3*Math.PI / 2)) // 60, -60, Math.toRadians(270)
                 .build();
 
 
@@ -283,14 +282,6 @@ public class TestSimpleAuto extends LinearOpMode {
 
 
         Actions.runBlocking(
-               /* new ParallelAction(
-                        aprilTags.faceTag(),
-                        aprilTags.shoot(),
-                new SequentialAction(
-                        poo.build(),
-                        trajectoryActionCloseOut
-                ))*/
-
                 new ParallelAction(
                         aprilTags.shoot(),
                 new SequentialAction(
@@ -330,3 +321,4 @@ public class TestSimpleAuto extends LinearOpMode {
 
 
 }
+//miles was here

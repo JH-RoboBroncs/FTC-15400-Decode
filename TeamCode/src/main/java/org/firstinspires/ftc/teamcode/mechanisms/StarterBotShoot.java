@@ -16,6 +16,7 @@ public class StarterBotShoot {
         motor = hwMap.get(DcMotorEx.class, "shooter");
         servoOne = hwMap.get(CRServo.class, "servoOne");
         servoTwo = hwMap.get(CRServo.class, "servoTwo");
+        motor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
         motor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         ticksPerRotation = motor.getMotorType().getTicksPerRev();
 
@@ -33,4 +34,11 @@ public class StarterBotShoot {
     }
 
 
+    public void brake(boolean brake) {
+        if (brake) {
+            motor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        } else {
+            motor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
+        }
+    }
 }
