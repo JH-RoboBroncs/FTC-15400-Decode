@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.mechanisms.StarterBotShoot;
@@ -18,6 +19,7 @@ import org.firstinspires.ftc.teamcode.mechanisms.StarterBotShoot;
 @TeleOp
 public class StarterBotTeleOp extends LinearOpMode {
 
+    private ElapsedTime timer = new ElapsedTime();
     private Limelight3A limelight;
 
     StarterBotShoot shooter = new StarterBotShoot();
@@ -61,6 +63,10 @@ public class StarterBotTeleOp extends LinearOpMode {
 
             shooter.brake(gamepad2.y);
 
+            if (gamepad2.x) {
+                shooter.shoot2(timer);
+            }
+
             LLResult result = limelight.getLatestResult();
             double robotYaw = drive.localizer.getPose().heading.toDouble();
             limelight.updateRobotOrientation(Math.toDegrees(robotYaw));
@@ -68,7 +74,7 @@ public class StarterBotTeleOp extends LinearOpMode {
             Pose2d pose = drive.localizer.getPose();
             Pose2d mt2pose = new Pose2d(currentX*72, currentY*72, robotYaw);
             telemetry.addData("heading (drive)", Math.toDegrees(pose.heading.toDouble()));
-
+            telemetry.addData("time", timer);
 
                     /*if (result.isValid()) {
                         List<LLResultTypes.FiducialResult> fiducialResults = result.getFiducialResults();

@@ -163,7 +163,7 @@ public class TestSimpleAuto extends LinearOpMode {
                     shooter.setPower(0);
                 }
 
-                if (/*(timer.seconds() > 5.75 && timer.seconds() < 6) ||*/ (timer.seconds() > 7 && timer.seconds() < 7.25) || (timer.seconds() > 8.25 && timer.seconds() < 8.5)) {
+                if ( (timer.seconds() > 7 && timer.seconds() < 7.25) || (timer.seconds() > 8.25 && timer.seconds() < 8.5)) {
                     phase = 2; // load
                 } else if ((timer.seconds() > 5.75 && timer.seconds() < 6)) {
                     phase = 3;
@@ -251,7 +251,7 @@ public class TestSimpleAuto extends LinearOpMode {
 
         Action trajectoryActionCloseOut = poo.endTrajectory().fresh()
                 .waitSeconds(9.5)
-                .splineToLinearHeading(new Pose2d( 60, -45, Math.toRadians(270)), (3*Math.PI / 2)) // 60, -60, Math.toRadians(270)
+                .splineToLinearHeading(new Pose2d( 60, 45, Math.toRadians(270)), (3*Math.PI / 2)) // 60, -60, Math.toRadians(270)
                 .build();
 
 
