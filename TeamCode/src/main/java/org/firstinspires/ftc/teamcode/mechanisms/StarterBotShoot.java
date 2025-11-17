@@ -14,7 +14,6 @@ public class StarterBotShoot {
     private double ticksPerRotation;
     private int phase = 1;
 
-
     public void init(HardwareMap hwMap) {
         motor = hwMap.get(DcMotorEx.class, "shooter");
         servoOne = hwMap.get(CRServo.class, "servoOne");
@@ -46,7 +45,7 @@ public class StarterBotShoot {
     }
 
     public void shoot2(ElapsedTime timer) {
-        timer.reset();
+        //timer.reset();
         if (timer.seconds() > 2 && timer.seconds() < 10) {
             motor.setPower(0.45); //0.45
         } else if (timer.seconds() < 10) {
