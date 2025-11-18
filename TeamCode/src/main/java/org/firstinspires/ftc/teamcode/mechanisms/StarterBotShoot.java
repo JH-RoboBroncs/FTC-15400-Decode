@@ -18,7 +18,6 @@ public class StarterBotShoot {
         motor = hwMap.get(DcMotorEx.class, "shooter");
         servoOne = hwMap.get(CRServo.class, "servoOne");
         servoTwo = hwMap.get(CRServo.class, "servoTwo");
-        motor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
         motor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         ticksPerRotation = motor.getMotorType().getTicksPerRev();
 
@@ -46,17 +45,17 @@ public class StarterBotShoot {
 
     public void shoot2(ElapsedTime timer) {
         //timer.reset();
-        if (timer.seconds() > 2 && timer.seconds() < 10) {
-            motor.setPower(0.45); //0.45
+        if (timer.seconds() > 4.5 && timer.seconds() < 10) {
+            motor.setPower(1); //0.45
         } else if (timer.seconds() < 10) {
-            motor.setPower(0.45);
+            motor.setPower(1);
         } else {
             motor.setPower(0);
         }
 
-        if ( (timer.seconds() > 1.5 && timer.seconds() < 1.75) || (timer.seconds() > 2.75 && timer.seconds() < 3.25)) {
+        if ( (timer.seconds() > 2.25 && timer.seconds() < 2.5) || (timer.seconds() > 3.5 && timer.seconds() < 3.75)) {
             phase = 2; // load
-        } else if ((timer.seconds() > 0.25 && timer.seconds() < .5)) {
+        } else if ((timer.seconds() > 1 && timer.seconds() < 1.25)) {
             phase = 3;
         } else {
             phase = 1; // idle
@@ -69,12 +68,12 @@ public class StarterBotShoot {
                 servoOne.setPower(0);
                 break;
             case 2: //loading
-                servoTwo.setPower(0.7); //.65
-                servoOne.setPower(-0.7);
+                servoTwo.setPower(1); //.65
+                servoOne.setPower(-1);
                 break;
             case 3: //loading
-                servoTwo.setPower(0.8);
-                servoOne.setPower(-0.8);
+                servoTwo.setPower(1);
+                servoOne.setPower(-1);
                 break;
             default:
                 servoTwo.setPower(0);

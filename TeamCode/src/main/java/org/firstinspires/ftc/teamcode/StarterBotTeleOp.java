@@ -10,6 +10,7 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -24,7 +25,7 @@ public class StarterBotTeleOp extends LinearOpMode {
 
     StarterBotShoot shooter = new StarterBotShoot();
     private DcMotor motor;
-
+    boolean shooting = false;
 
     double currentX;
     double currentY;
@@ -33,6 +34,7 @@ public class StarterBotTeleOp extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
         limelight.start();
+        motor = hardwareMap.get(DcMotorEx.class, "shooter");
 
         MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(60, 0, Math.toRadians(180)));
         shooter.init(hardwareMap);
@@ -63,9 +65,22 @@ public class StarterBotTeleOp extends LinearOpMode {
 
             shooter.brake(gamepad2.y);
 
-            if (gamepad2.x) {
+            if (gamepad2.x && !shooting) {
+                shooting = true;
                 timer.reset();
+            }
+
+
+
+            if (shooting) {
                 shooter.shoot2(timer);
+
+                // Stop after full cycle (adjust time as needed)
+                if (timer.seconds() > 5) {   // <-- duration of full cycle
+                    shooting = false;
+                    shooter.shoot(0);           // stop motor
+                    shooter.load(0);            // stop servos
+                }
             }
 
 
@@ -76,8 +91,11 @@ public class StarterBotTeleOp extends LinearOpMode {
 
             Pose2d pose = drive.localizer.getPose();
             Pose2d mt2pose = new Pose2d(currentX*72, currentY*72, robotYaw);
-            telemetry.addData("heading (drive)", Math.toDegrees(pose.heading.toDouble()));
+            telemetry.addData("shooting", shooting);
             telemetry.addData("time", timer);
+            telemetry.addData("motorspeed", motor.getPower());
+
+
 
                     /*if (result.isValid()) {
                         List<LLResultTypes.FiducialResult> fiducialResults = result.getFiducialResults();
