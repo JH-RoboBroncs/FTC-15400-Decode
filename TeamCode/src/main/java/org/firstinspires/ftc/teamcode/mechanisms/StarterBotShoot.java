@@ -13,6 +13,7 @@ public class StarterBotShoot {
     private CRServo servoTwo;
     private double ticksPerRotation;
     private int phase = 1;
+    private int mphase = 1;
 
     public void init(HardwareMap hwMap) {
         motor = hwMap.get(DcMotorEx.class, "shooter");
@@ -35,25 +36,19 @@ public class StarterBotShoot {
     }
 
 
-    public void brake(boolean brake) {
-        if (brake) {
-            motor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        } else {
-            motor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
-        }
-    }
-
     public void shoot2(ElapsedTime timer) {
         //timer.reset();
-        if (timer.seconds() > 4.5 && timer.seconds() < 10) {
-            motor.setPower(1); //0.45
-        } else if (timer.seconds() < 10) {
-            motor.setPower(1);
+        if (timer.seconds() > 3 && timer.seconds() < 5) { //3rd ball
+            mphase = 2;
+        } else if (timer.seconds() > 1.5 && timer.seconds() < 3) { //2nd ball
+            mphase = 3;
+        } else if (timer.seconds() < 10) { // 1st ball
+            mphase = 4;
         } else {
-            motor.setPower(0);
+            mphase = 1;
         }
 
-        if ( (timer.seconds() > 2.25 && timer.seconds() < 2.5) || (timer.seconds() > 3.5 && timer.seconds() < 3.75)) {
+        if ( (timer.seconds() > 2.25 && timer.seconds() < 2.5) || (timer.seconds() > 3.5 && timer.seconds() < 4.5)) {
             phase = 2; // load
         } else if ((timer.seconds() > 1 && timer.seconds() < 1.25)) {
             phase = 3;
@@ -78,6 +73,23 @@ public class StarterBotShoot {
             default:
                 servoTwo.setPower(0);
                 servoOne.setPower(0);
+        }
+
+        switch (mphase){
+            case 1: // waiting
+                motor.setPower(0);
+                break;
+            case 2: //loading
+                motor.setPower(.5); //1st ball
+                break;
+            case 3: //loading
+                motor.setPower(.5); // 2nd ball
+                break;
+            case 4: //loading
+                motor.setPower(.5); //3rd ball
+                break;
+            default:
+                motor.setPower(0);
         }
 
     }

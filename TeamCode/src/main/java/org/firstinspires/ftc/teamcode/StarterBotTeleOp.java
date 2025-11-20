@@ -51,7 +51,7 @@ public class StarterBotTeleOp extends LinearOpMode {
                     -gamepad1.right_stick_x
             ));
 
-            if (gamepad2.a){
+           /* if (gamepad2.a){
                 shooter.shoot(.45);
             } else {
                 shooter.shoot(0);
@@ -61,9 +61,9 @@ public class StarterBotTeleOp extends LinearOpMode {
                 shooter.load(.55);
                 } else {
                 shooter.load(0);
-            }
+            }*/
 
-            shooter.brake(gamepad2.y);
+
 
             if (gamepad2.x && !shooting) {
                 shooting = true;
