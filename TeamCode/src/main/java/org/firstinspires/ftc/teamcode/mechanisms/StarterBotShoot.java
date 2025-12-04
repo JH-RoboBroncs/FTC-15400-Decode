@@ -48,9 +48,9 @@ public class StarterBotShoot {
             mphase = 1;
         }
 
-        if ( (timer.seconds() > 2.25 && timer.seconds() < 2.5) || (timer.seconds() > 3.5 && timer.seconds() < 4.5)) {
+        if ( (timer.seconds() > 2.75 && timer.seconds() < 2.8125) || (timer.seconds() > 4.5 && timer.seconds() < 5)) {
             phase = 2; // load
-        } else if ((timer.seconds() > 1 && timer.seconds() < 1.25)) {
+        } else if ((timer.seconds() > 1 && timer.seconds() < 1.125)) {
             phase = 3;
         } else {
             phase = 1; // idle
@@ -63,12 +63,12 @@ public class StarterBotShoot {
                 servoOne.setPower(0);
                 break;
             case 2: //loading
-                servoTwo.setPower(1); //.65
-                servoOne.setPower(-1);
+                servoTwo.setPower(.75); //.65
+                servoOne.setPower(-0.75);
                 break;
             case 3: //loading
-                servoTwo.setPower(1);
-                servoOne.setPower(-1);
+                servoTwo.setPower(.75);
+                servoOne.setPower(-.75);
                 break;
             default:
                 servoTwo.setPower(0);
@@ -80,10 +80,10 @@ public class StarterBotShoot {
                 motor.setPower(0);
                 break;
             case 2: //loading
-                motor.setPower(.5); //1st ball
+                motor.setPower(.45); //1st ball
                 break;
             case 3: //loading
-                motor.setPower(.5); // 2nd ball
+                motor.setPower(.45); // 2nd ball
                 break;
             case 4: //loading
                 motor.setPower(.5); //3rd ball
