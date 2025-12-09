@@ -48,10 +48,12 @@ public class StarterBotShoot {
             mphase = 1;
         }
 
-        if ( (timer.seconds() > 2.75 && timer.seconds() < 2.8125) || (timer.seconds() > 4.5 && timer.seconds() < 5)) {
+        if ((timer.seconds() > 1.35 && timer.seconds() < 1.5) || (timer.seconds() > 2.75 && timer.seconds() < 3) || (timer.seconds() > 4.5 && timer.seconds() < 5)) {
             phase = 2; // load
-        } else if ((timer.seconds() > 1 && timer.seconds() < 1.125)) {
-            phase = 3;
+        /*} else if ((timer.seconds() > 1.35 && timer.seconds() < 1.5)) {
+            phase = 3;*/
+        } else if (timer.seconds()< .75) {
+            phase = 4;
         } else {
             phase = 1; // idle
         }
@@ -63,12 +65,16 @@ public class StarterBotShoot {
                 servoOne.setPower(0);
                 break;
             case 2: //loading
-                servoTwo.setPower(.75); //.65
-                servoOne.setPower(-0.75);
+                servoTwo.setPower(.25); //.65
+                servoOne.setPower(-0.25);
                 break;
             case 3: //loading
-                servoTwo.setPower(.75);
-                servoOne.setPower(-.75);
+                servoTwo.setPower(.5);
+                servoOne.setPower(-.5);
+                break;
+            case 4:
+                servoOne.setPower(.65);
+                servoTwo.setPower(-.65);
                 break;
             default:
                 servoTwo.setPower(0);
@@ -77,21 +83,30 @@ public class StarterBotShoot {
 
         switch (mphase){
             case 1: // waiting
-                motor.setPower(0);
+                //motor.setPower(0);
+                motor.setVelocity(0);
                 break;
             case 2: //loading
-                motor.setPower(.45); //1st ball
+                //motor.setPower(.45); //1st ball
+                motor.setVelocity(ticksPerRotation/(1.1766/.475));
                 break;
             case 3: //loading
-                motor.setPower(.45); // 2nd ball
+                //motor.setPower(.45); // 2nd ball
+                motor.setVelocity(ticksPerRotation/(1.1766/.475));
                 break;
             case 4: //loading
-                motor.setPower(.5); //3rd ball
+                //motor.setPower(.5); //3rd ball
+                motor.setVelocity(ticksPerRotation/(1.1766/.425));
                 break;
             default:
-                motor.setPower(0);
+                //motor.setPower(0);
         }
 
+    }
+
+    public void antiload(double speed) {
+        servoTwo.setPower(-speed);
+        servoOne.setPower(speed);
     }
 
 }

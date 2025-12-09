@@ -81,6 +81,8 @@ public class StarterBotTeleOp extends LinearOpMode {
                     shooter.shoot(0);           // stop motor
                     shooter.load(0);            // stop servos
                 }
+            } else {
+                shooter.antiload(.15);
             }
 
 
