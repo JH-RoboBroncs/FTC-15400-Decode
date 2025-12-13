@@ -55,19 +55,21 @@ public class TestSimpleAuto extends LinearOpMode {
         Pose2d initialPose = new Pose2d(60, -12, Math.toRadians(180));
         MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
         Pose2d localizerPose = drive.localizer.getPose();
-
+        double ticksPerRotation;
 
 
         private CRServo servoOne;
         private CRServo servoTwo;
-        private DcMotor shooter;
+        private DcMotorEx shooter;
+
 
         public AprilTagss() {
             servoOne = hardwareMap.get(CRServo.class, "servoOne");
             servoTwo = hardwareMap.get(CRServo.class, "servoTwo");
 
-            shooter = hardwareMap.get(DcMotor.class, "shooter");
+            shooter = hardwareMap.get(DcMotorEx.class, "shooter");
             shooter.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+            ticksPerRotation = shooter.getMotorType().getTicksPerRev();
         }
 
 
@@ -134,6 +136,7 @@ public class TestSimpleAuto extends LinearOpMode {
         }
 
 
+
         public class shoot implements Action {  // not working rn
             private boolean initialized = false;
 
@@ -156,7 +159,7 @@ public class TestSimpleAuto extends LinearOpMode {
                 }
 
                 if (timer.seconds() > 7.5 && timer.seconds() < 10) {
-                    shooter.setPower(0.45); //0.45
+                    shooter.setPower(.45); //0.45
                 } else if (timer.seconds() > 5.5 && timer.seconds() < 10) {
                     shooter.setPower(0.45);
                 } else {
@@ -206,6 +209,107 @@ public class TestSimpleAuto extends LinearOpMode {
         }
 
 
+        public class shootGood implements Action {  // not working rn
+            private boolean initialized = false;
+
+            private int phase = 0;
+            private int mphase = 0;
+
+
+            // actions are formatted via telemetry packets as below
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+
+
+
+                //powers on motor, if it is not on
+                if (!initialized) {
+                    initialized = true;
+                    timer.reset();
+                    shooter.setPower(0);
+                    servoTwo.setPower(0);
+                    servoOne.setPower(0);
+                }
+
+                //timer.reset();
+                if (timer.seconds() > 7 && timer.seconds() < 9) { //3rd ball
+                    mphase = 2;
+                } else if (timer.seconds() > 5.5 && timer.seconds() < 7) { //2nd ball
+                    mphase = 3;
+                } else {
+                    mphase = 1;
+                }
+
+                if ((timer.seconds() > 5.35 && timer.seconds() < 5.5) || (timer.seconds() > 6.75 && timer.seconds() < 7) || (timer.seconds() > 8.5 && timer.seconds() < 9)) {
+                    phase = 2; // load
+        /*} else if ((timer.seconds() > 1.35 && timer.seconds() < 1.5)) {
+            phase = 3;*/
+                } else if (timer.seconds()< 4.75) {
+                    phase = 4;
+                } else {
+                    phase = 1; // idle
+                }
+
+
+                switch (phase){
+                    case 1: // waiting
+                        servoTwo.setPower(0);
+                        servoOne.setPower(0);
+                        break;
+                    case 2: //loading
+                        servoTwo.setPower(.25); //.65
+                        servoOne.setPower(-0.25);
+                        break;
+                    case 3: //loading
+                        servoTwo.setPower(.5);
+                        servoOne.setPower(-.5);
+                        break;
+                    case 4:
+                        servoOne.setPower(.65);
+                        servoTwo.setPower(-.65);
+                        break;
+                    default:
+                        servoTwo.setPower(0);
+                        servoOne.setPower(0);
+                }
+
+                switch (mphase){
+                    case 1: // waiting
+                        //motor.setPower(0);
+                        shooter.setVelocity(0);
+                        break;
+                    case 2: //loading
+                        //motor.setPower(.45); //1st ball
+                        shooter.setVelocity(ticksPerRotation/(1.1766/.475));
+                        break;
+                    case 3: //loading
+                        //motor.setPower(.45); // 2nd ball
+                        shooter.setVelocity(ticksPerRotation/(1.1766/.475));
+                        break;
+                    case 4: //loading
+                        //motor.setPower(.5); //3rd ball
+                        shooter.setVelocity(ticksPerRotation/(1.1766/.425));
+                        break;
+                    default:
+                        //motor.setPower(0);
+                }
+
+
+                packet.fieldOverlay().setStroke("#3F51B5");
+                Drawing.drawRobot(packet.fieldOverlay(), localizerPose);
+                FtcDashboard.getInstance().sendTelemetryPacket(packet);
+                telemetry.addData("shooter power", shooter.getPower());
+                telemetry.addData("loader1 power", servoOne.getPower());
+                telemetry.addData("loader2 power", servoTwo.getPower());
+
+                telemetry.update();
+
+                return opModeIsActive(); //true;
+            }
+
+        }
+
+
 
 
 
@@ -216,6 +320,10 @@ public class TestSimpleAuto extends LinearOpMode {
 
         public Action shoot() {
             return new TestSimpleAuto.AprilTagss.shoot();
+        }
+
+        public Action goodShoot() {
+            return new TestSimpleAuto.AprilTagss.shootGood();
         }
 
     }
@@ -283,7 +391,7 @@ public class TestSimpleAuto extends LinearOpMode {
 
         Actions.runBlocking(
                 new ParallelAction(
-                        aprilTags.shoot(),
+                        aprilTags.goodShoot(),
                 new SequentialAction(
                         poo.build(),
                         trajectoryActionCloseOut
