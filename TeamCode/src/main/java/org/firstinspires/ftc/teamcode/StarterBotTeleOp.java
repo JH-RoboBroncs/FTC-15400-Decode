@@ -26,6 +26,7 @@ public class StarterBotTeleOp extends LinearOpMode {
     StarterBotShoot shooter = new StarterBotShoot();
     private DcMotor motor;
     boolean shooting = false;
+    boolean sensToggle = true;
 
     double currentX;
     double currentY;
@@ -43,14 +44,23 @@ public class StarterBotTeleOp extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
-            drive.setDrivePowers(new PoseVelocity2d(
-                    new Vector2d(
-                            -gamepad1.left_stick_y *0.85,
-                            -gamepad1.left_stick_x *0.85
-                    ),
-                    -gamepad1.right_stick_x
-            ));
-
+            if (sensToggle) {
+                drive.setDrivePowers(new PoseVelocity2d(
+                        new Vector2d(
+                                -gamepad1.left_stick_y * 0.85,
+                                -gamepad1.left_stick_x * 0.85
+                        ),
+                        -gamepad1.right_stick_x * 2
+                ));
+            } else {
+                drive.setDrivePowers(new PoseVelocity2d(
+                        new Vector2d(
+                                -gamepad1.left_stick_y * 0.325,
+                                -gamepad1.left_stick_x * 0.325
+                        ),
+                        -gamepad1.right_stick_x * .25
+                ));
+            }
            /* if (gamepad2.a){
                 shooter.shoot(.45);
             } else {
@@ -70,6 +80,12 @@ public class StarterBotTeleOp extends LinearOpMode {
                 timer.reset();
             }
 
+            if (gamepad1.yWasPressed() && sensToggle) {
+                sensToggle = false;
+            } else if (gamepad1.yWasReleased() && !sensToggle) {
+                sensToggle = true;
+            }
+
 
 
             if (shooting) {
@@ -82,6 +98,7 @@ public class StarterBotTeleOp extends LinearOpMode {
                     shooter.load(0);            // stop servos
                 }
             } else {
+               // shooter.shoot(-.05);
                 shooter.antiload(.15);
             }
 
@@ -93,7 +110,7 @@ public class StarterBotTeleOp extends LinearOpMode {
 
             Pose2d pose = drive.localizer.getPose();
             Pose2d mt2pose = new Pose2d(currentX*72, currentY*72, robotYaw);
-            telemetry.addData("shooting", shooting);
+            telemetry.addData("sensitivity", sensToggle);
             telemetry.addData("time", timer);
             telemetry.addData("motorspeed", motor.getPower());
 

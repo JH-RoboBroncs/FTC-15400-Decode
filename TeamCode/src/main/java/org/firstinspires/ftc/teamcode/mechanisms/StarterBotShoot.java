@@ -27,7 +27,7 @@ public class StarterBotShoot {
 
 
     public void shoot(double speed) {
-        motor.setPower(speed);
+        motor.setVelocity(ticksPerRotation/(1.766/speed));
     }
 
     public void load(double speed) {
@@ -48,11 +48,9 @@ public class StarterBotShoot {
             mphase = 1;
         }
 
-        if ((timer.seconds() > 1.35 && timer.seconds() < 1.5) || (timer.seconds() > 2.75 && timer.seconds() < 3) || (timer.seconds() > 4.5 && timer.seconds() < 5)) {
+        if ((timer.seconds() > 1.35 && timer.seconds() < 1.5) || (timer.seconds() > 2.85 && timer.seconds() < 3) || (timer.seconds() > 4.5 && timer.seconds() < 5)) {
             phase = 2; // load
-        /*} else if ((timer.seconds() > 1.35 && timer.seconds() < 1.5)) {
-            phase = 3;*/
-        } else if (timer.seconds()< .75) {
+        } else if ((timer.seconds() < .75) || (timer.seconds() > 1.5 && timer.seconds() < 2.25) || (timer.seconds() > 3.15 && timer.seconds() < 3.9)) {
             phase = 4;
         } else {
             phase = 1; // idle
@@ -73,8 +71,8 @@ public class StarterBotShoot {
                 servoOne.setPower(-.5);
                 break;
             case 4:
-                servoOne.setPower(.65);
-                servoTwo.setPower(-.65);
+                servoOne.setPower(1);
+                servoTwo.setPower(-1);
                 break;
             default:
                 servoTwo.setPower(0);
@@ -88,15 +86,15 @@ public class StarterBotShoot {
                 break;
             case 2: //loading
                 //motor.setPower(.45); //1st ball
-                motor.setVelocity(ticksPerRotation/(1.1766/.475));
+                motor.setVelocity(ticksPerRotation/(1.1766/.475)); //.475
                 break;
             case 3: //loading
                 //motor.setPower(.45); // 2nd ball
-                motor.setVelocity(ticksPerRotation/(1.1766/.475));
+                motor.setVelocity(ticksPerRotation/(1.1766/.475)); //.475
                 break;
             case 4: //loading
                 //motor.setPower(.5); //3rd ball
-                motor.setVelocity(ticksPerRotation/(1.1766/.425));
+                motor.setVelocity(ticksPerRotation/(1.1766/.425)); //.425
                 break;
             default:
                 //motor.setPower(0);

@@ -27,11 +27,13 @@ import com.qualcomm.robotcore.hardware.IMU;
 
 
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.teamcode.Drawing;
+import org.firstinspires.ftc.teamcode.MecanumDrive;
 
 import java.util.List;
 
 @Autonomous
-public class TestSimpleAuto extends LinearOpMode {
+public class oneCycleAuto extends LinearOpMode {
 
     private Limelight3A limelight;
 
@@ -88,17 +90,17 @@ public class TestSimpleAuto extends LinearOpMode {
                     initialized = true;
                 }
 
-                    double robotYaw = drive.localizer.getPose().heading.toDouble();
-                    limelight.updateRobotOrientation(Math.toDegrees(-robotYaw));
+                double robotYaw = drive.localizer.getPose().heading.toDouble();
+                limelight.updateRobotOrientation(Math.toDegrees(-robotYaw));
 
 
 
-                    Pose2d mt2BotPos = new Pose2d(currentX *72, currentY*72, robotYaw);
-                    Pose2d pose = drive.localizer.getPose();
-                    telemetry.addData("heading (drive)", Math.toDegrees(pose.heading.toDouble()));
-                    packet.fieldOverlay().setStroke("#3F51B5");
-                    Drawing.drawRobot(packet.fieldOverlay(), mt2BotPos);
-                    FtcDashboard.getInstance().sendTelemetryPacket(packet);
+                Pose2d mt2BotPos = new Pose2d(currentX *72, currentY*72, robotYaw);
+                Pose2d pose = drive.localizer.getPose();
+                telemetry.addData("heading (drive)", Math.toDegrees(pose.heading.toDouble()));
+                packet.fieldOverlay().setStroke("#3F51B5");
+                Drawing.drawRobot(packet.fieldOverlay(), mt2BotPos);
+                FtcDashboard.getInstance().sendTelemetryPacket(packet);
 
 
                     /*if (result.isValid()) {
@@ -112,35 +114,35 @@ public class TestSimpleAuto extends LinearOpMode {
                             }
 
                         } */if (result.isValid()) {
-                            Pose3D botpose_mt2 = result.getBotpose_MT2();
+                    Pose3D botpose_mt2 = result.getBotpose_MT2();
 
-                                if (botpose_mt2 != null) {
-                                double x = botpose_mt2.getPosition().x;
-                                double y = botpose_mt2.getPosition().y;
-                                double h = botpose_mt2.getOrientation().getYaw();
-                                currentX = x;
-                                currentY = y;
-                                Pose2d poopose = new Pose2d(currentX, currentY, robotYaw);
+                    if (botpose_mt2 != null) {
+                        double x = botpose_mt2.getPosition().x;
+                        double y = botpose_mt2.getPosition().y;
+                        double h = botpose_mt2.getOrientation().getYaw();
+                        currentX = x;
+                        currentY = y;
+                        Pose2d poopose = new Pose2d(currentX, currentY, robotYaw);
 
-                                telemetry.addData("MT2 Location:", poopose);
-                            }
-                        } else {
-                            telemetry.addLine("No Tag");
+                        telemetry.addData("MT2 Location:", poopose);
+                    }
+                } else {
+                    telemetry.addLine("No Tag");
 
-                        }
+                }
 
-                    drive.updatePoseEstimate();
-                    telemetry.update();
-                    return opModeIsActive();//true;
+                drive.updatePoseEstimate();
+                telemetry.update();
+                return opModeIsActive();//true;
             }
         }
 
 
-        public class shootGood implements Action {  // not working rn
+
+        public class shoot implements Action {  // not working rn
             private boolean initialized = false;
 
             private int phase = 0;
-            private int mphase = 0;
 
 
             // actions are formatted via telemetry packets as below
@@ -158,20 +160,90 @@ public class TestSimpleAuto extends LinearOpMode {
                     servoOne.setPower(0);
                 }
 
-                //timer.reset();
-                if (timer.seconds() > 7 && timer.seconds() < 9) { //3rd ball
+                if (timer.seconds() > 7.5 && timer.seconds() < 10) {
+                    shooter.setPower(.45); //0.45
+                } else if (timer.seconds() > 5.5 && timer.seconds() < 10) {
+                    shooter.setPower(0.45);
+                } else {
+                    shooter.setPower(0);
+                }
+
+                if ( (timer.seconds() > 7 && timer.seconds() < 7.25) || (timer.seconds() > 8.25 && timer.seconds() < 8.5)) {
+                    phase = 2; // load
+                } else if ((timer.seconds() > 5.75 && timer.seconds() < 6)) {
+                    phase = 3;
+                } else {
+                    phase = 1; // idle
+                }
+
+
+                switch (phase){
+                    case 1: // waiting
+                        servoTwo.setPower(0);
+                        servoOne.setPower(0);
+                        break;
+                    case 2: //loading
+                        servoTwo.setPower(0.7); //.65
+                        servoOne.setPower(-0.7);
+                        break;
+                    case 3: //loading
+                        servoTwo.setPower(0.8);
+                        servoOne.setPower(-0.8);
+                        break;
+                    default:
+                        servoTwo.setPower(0);
+                        servoOne.setPower(0);
+                }
+
+
+                packet.fieldOverlay().setStroke("#3F51B5");
+                Drawing.drawRobot(packet.fieldOverlay(), localizerPose);
+                FtcDashboard.getInstance().sendTelemetryPacket(packet);
+                telemetry.addData("shooter power", shooter.getPower());
+                telemetry.addData("loader1 power", servoOne.getPower());
+                telemetry.addData("loader2 power", servoTwo.getPower());
+
+                telemetry.update();
+
+                return opModeIsActive(); //true;
+            }
+
+        }
+
+
+        public class shootGood implements Action {  // not working rn
+            private boolean initialized = false;
+
+            private int phase = 0;
+            private int mphase = 0;
+
+
+            // actions are formatted via telemetry packets as below
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+
+                //powers on motor, if it is not on
+                if (!initialized) {
+                    initialized = true;
+                    timer.reset();
+                    shooter.setPower(0);
+                    servoTwo.setPower(0);
+                    servoOne.setPower(0);
+                }
+
+                if (timer.seconds() > 3 && timer.seconds() < 5) { //3rd ball
                     mphase = 2;
-                } else if (timer.seconds() > 5.5 && timer.seconds() < 7) { //2nd ball
+                } else if (timer.seconds() > 1.5 && timer.seconds() < 3) { //2nd ball
                     mphase = 3;
+                } else if (timer.seconds() < 10) { // 1st ball
+                    mphase = 4;
                 } else {
                     mphase = 1;
                 }
 
-                if ((timer.seconds() > 5.35 && timer.seconds() < 5.5) || (timer.seconds() > 6.75 && timer.seconds() < 7) || (timer.seconds() > 8.5 && timer.seconds() < 9)) {
+                if ((timer.seconds() > 1.35 && timer.seconds() < 1.5) || (timer.seconds() > 2.85 && timer.seconds() < 3) || (timer.seconds() > 4.5 && timer.seconds() < 5)) {
                     phase = 2; // load
-        /*} else if ((timer.seconds() > 1.35 && timer.seconds() < 1.5)) {
-            phase = 3;*/
-                } else if (timer.seconds()< 4.75) {
+                } else if ((timer.seconds() < .75) || (timer.seconds() > 1.5 && timer.seconds() < 2.25) || (timer.seconds() > 3.15 && timer.seconds() < 3.9)) {
                     phase = 4;
                 } else {
                     phase = 1; // idle
@@ -192,8 +264,8 @@ public class TestSimpleAuto extends LinearOpMode {
                         servoOne.setPower(-.5);
                         break;
                     case 4:
-                        servoOne.setPower(.65);
-                        servoTwo.setPower(-.65);
+                        servoOne.setPower(1);
+                        servoTwo.setPower(-1);
                         break;
                     default:
                         servoTwo.setPower(0);
@@ -207,27 +279,30 @@ public class TestSimpleAuto extends LinearOpMode {
                         break;
                     case 2: //loading
                         //motor.setPower(.45); //1st ball
-                        shooter.setVelocity(ticksPerRotation/(1.1766/.475));
+                        shooter.setVelocity(ticksPerRotation/(1.1766/.475)); //.475
                         break;
                     case 3: //loading
                         //motor.setPower(.45); // 2nd ball
-                        shooter.setVelocity(ticksPerRotation/(1.1766/.475));
+                        shooter.setVelocity(ticksPerRotation/(1.1766/.475)); //.475
                         break;
                     case 4: //loading
                         //motor.setPower(.5); //3rd ball
-                        shooter.setVelocity(ticksPerRotation/(1.1766/.425));
+                        shooter.setVelocity(ticksPerRotation/(1.1766/.425)); //.425
                         break;
                     default:
                         //motor.setPower(0);
                 }
 
 
+
                 packet.fieldOverlay().setStroke("#3F51B5");
                 Drawing.drawRobot(packet.fieldOverlay(), localizerPose);
                 FtcDashboard.getInstance().sendTelemetryPacket(packet);
+                telemetry.addData("shooter power", shooter.getPower());
+                telemetry.addData("loader1 power", servoOne.getPower());
+                telemetry.addData("loader2 power", servoTwo.getPower());
 
                 telemetry.update();
-                drive.updatePoseEstimate();
 
                 return opModeIsActive(); //true;
             }
@@ -239,12 +314,9 @@ public class TestSimpleAuto extends LinearOpMode {
 
 
         //turns these into actions to be used in actions.runblocking (question mark?)
-        public Action faceTag() {
-            return new TestSimpleAuto.AprilTagss.faceTag();
-        }
 
         public Action goodShoot() {
-            return new TestSimpleAuto.AprilTagss.shootGood();
+            return new org.firstinspires.ftc.teamcode.oneCycleAuto.AprilTagss.shootGood();
         }
 
     }
@@ -264,7 +336,7 @@ public class TestSimpleAuto extends LinearOpMode {
         backLeftDrive = hardwareMap.get(DcMotor.class, "leftBack");
         backRightDrive = hardwareMap.get(DcMotor.class, "rightBack");
 
-        AprilTagss aprilTags = new AprilTagss();
+        org.firstinspires.ftc.teamcode.oneCycleAuto.AprilTagss aprilTags = new org.firstinspires.ftc.teamcode.oneCycleAuto.AprilTagss();
 
         limelight.pipelineSwitch(0);
         //limelight.setPollRateHz(150);
@@ -275,7 +347,7 @@ public class TestSimpleAuto extends LinearOpMode {
                 .waitSeconds(1)
                 .setTangent(180)
                 //.splineToConstantHeading(new Vector2d(-50, -43), (3 * Math.PI / 2));
-               .splineToLinearHeading(new Pose2d(-55, -55 , Math.toRadians(230)), (3*Math.PI / 2));
+                .splineToLinearHeading(new Pose2d(-55, -55 , Math.toRadians(230)), (3*Math.PI / 2));
 
 
         Action trajectoryActionCloseOut = poo.endTrajectory().fresh()
@@ -311,12 +383,9 @@ public class TestSimpleAuto extends LinearOpMode {
 
 
         Actions.runBlocking(
-                new ParallelAction(
-                        aprilTags.goodShoot(),
                 new SequentialAction(
-                        poo.build(),
-                        trajectoryActionCloseOut
-                ))
+                        aprilTags.goodShoot()
+                )
         );
 
 
