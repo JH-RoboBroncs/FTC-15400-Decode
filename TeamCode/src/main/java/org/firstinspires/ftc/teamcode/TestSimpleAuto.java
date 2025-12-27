@@ -33,7 +33,7 @@ import java.util.List;
 @Autonomous
 public class TestSimpleAuto extends LinearOpMode {
 
-    private Limelight3A limelight;
+    //private Limelight3A limelight;
 
     private ElapsedTime timer = new ElapsedTime();
 
@@ -79,7 +79,7 @@ public class TestSimpleAuto extends LinearOpMode {
             // actions are formatted via telemetry packets as below
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-                LLResult result = limelight.getLatestResult();
+              //  LLResult result = limelight.getLatestResult();
 
                 final double TURN_GAIN = 0.05;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
                 final double MAX_AUTO_TURN = 0.2;
@@ -89,7 +89,7 @@ public class TestSimpleAuto extends LinearOpMode {
                 }
 
                     double robotYaw = drive.localizer.getPose().heading.toDouble();
-                    limelight.updateRobotOrientation(Math.toDegrees(-robotYaw));
+                  //  limelight.updateRobotOrientation(Math.toDegrees(-robotYaw));
 
 
 
@@ -111,7 +111,7 @@ public class TestSimpleAuto extends LinearOpMode {
                                 telemetry.addData("Tag valid", fr.getFiducialId());
                             }
 
-                        } */if (result.isValid()) {
+                        } if (result.isValid()) {
                             Pose3D botpose_mt2 = result.getBotpose_MT2();
 
                                 if (botpose_mt2 != null) {
@@ -127,7 +127,7 @@ public class TestSimpleAuto extends LinearOpMode {
                         } else {
                             telemetry.addLine("No Tag");
 
-                        }
+                        }*/
 
                     drive.updatePoseEstimate();
                     telemetry.update();
@@ -257,7 +257,7 @@ public class TestSimpleAuto extends LinearOpMode {
 
         boolean targetFound = false;    // Set to true when an AprilTag target is detected
         double turn = 0;        // Desired turning power/speed (-1 to +1)
-        limelight = hardwareMap.get(Limelight3A.class, "limelight");
+       // limelight = hardwareMap.get(Limelight3A.class, "limelight");
 
         frontLeftDrive = hardwareMap.get(DcMotor.class, "leftFront");
         frontRightDrive = hardwareMap.get(DcMotor.class, "rightFront");
@@ -266,9 +266,9 @@ public class TestSimpleAuto extends LinearOpMode {
 
         AprilTagss aprilTags = new AprilTagss();
 
-        limelight.pipelineSwitch(0);
+      //  limelight.pipelineSwitch(0);
         //limelight.setPollRateHz(150);
-        limelight.start();
+       // limelight.start();
 
 
         TrajectoryActionBuilder poo = aprilTags.drive.actionBuilder(aprilTags.initialPose)

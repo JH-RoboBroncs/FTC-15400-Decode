@@ -83,13 +83,13 @@ public class StarterBotTeleOp1 extends LinearOpMode {
             }
 
             if (gamepad2.dpad_up) {
-                Hood.setPosition(-.25);
-            } else if (gamepad2.dpad_down) {
-                Hood.setPosition(-.5);
-            } else if (gamepad2.dpad_left) {
                 Hood.setPosition(0);
+            } else if (gamepad2.dpad_down) {
+                Hood.setPosition(.125);
+            } else if (gamepad2.dpad_left) {
+                Hood.setPosition(0.08);
             } else if (gamepad2.dpad_right) {
-                Hood.setPosition(.25);
+                Hood.setPosition(.05);
             }
 
             if (gamepad1.yWasPressed() && sensToggle) {
