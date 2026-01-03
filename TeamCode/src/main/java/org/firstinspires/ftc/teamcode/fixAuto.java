@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
@@ -56,7 +58,7 @@ public class fixAuto extends LinearOpMode {
 
         TrajectoryActionBuilder poo = drive.actionBuilder(initialPose)
                 .waitSeconds(1)
-                .lineToXConstantHeading(40);
+                .lineToX(40);
                 //.setTangent(180)
                 //.splineToConstantHeading(new Vector2d(-50, -43), (3 * Math.PI / 2));
                 //.splineToLinearHeading(new Pose2d(-55, -55 , Math.toRadians(230)), (3*Math.PI / 2));
@@ -64,13 +66,21 @@ public class fixAuto extends LinearOpMode {
 
         Action trajectoryActionCloseOut = poo.endTrajectory().fresh()
                 .waitSeconds(3)
-                .lineToXConstantHeading(20)
+                .lineToX(20)
                 //.splineToLinearHeading(new Pose2d( 60, 45, Math.toRadians(270)), (3*Math.PI / 2)) // 60, -60, Math.toRadians(270)
                 .build();
 
 
 
         waitForStart();
+
+        TelemetryPacket packet = new TelemetryPacket();
+        packet.fieldOverlay().setStroke("#3F51B5");
+        Drawing.drawRobot(packet.fieldOverlay(), localizerPose);
+        FtcDashboard.getInstance().sendTelemetryPacket(packet);
+
+        telemetry.update();
+        drive.updatePoseEstimate();
 
 
         Actions.runBlocking(

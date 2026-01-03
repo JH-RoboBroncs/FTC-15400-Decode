@@ -86,15 +86,15 @@ public class StarterBotShoot {
                 break;
             case 2: //loading
                 //motor.setPower(.45); //1st ball
-                motor.setVelocity(ticksPerRotation/(1.1766/.475)); //.475
+                motor.setVelocity(ticksPerRotation/(1.1766/.55)); //.475
                 break;
             case 3: //loading
                 //motor.setPower(.45); // 2nd ball
-                motor.setVelocity(ticksPerRotation/(1.1766/.475)); //.475
+                motor.setVelocity(ticksPerRotation/(1.1766/.55)); //.475
                 break;
             case 4: //loading
                 //motor.setPower(.5); //3rd ball
-                motor.setVelocity(ticksPerRotation/(1.1766/.425)); //.425
+                motor.setVelocity(ticksPerRotation/(1.1766/.5)); //.425
                 break;
             default:
                 //motor.setPower(0);
