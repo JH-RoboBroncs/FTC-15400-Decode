@@ -105,11 +105,13 @@ public class StarterBotShoot {
 
     public void singleShoot(ElapsedTime timer, int hoodPhase) {
 
+        motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         //mphase = hoodPhase;
 
          if (timer.seconds() < 2) { // 1st ball
             mphase = hoodPhase + 1;
         } else {
+             motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             mphase = 0;
         }
 
@@ -154,7 +156,7 @@ public class StarterBotShoot {
                 motor.setVelocity(ticksPerRotation/(1.1766/.6)); //.65
                 break;
             case 4: //far triangle
-                motor.setVelocity(ticksPerRotation/(1.1766/.875)); //.925
+                motor.setVelocity(ticksPerRotation/(1.1766/.925)); //.925
                 break;
 
         }
