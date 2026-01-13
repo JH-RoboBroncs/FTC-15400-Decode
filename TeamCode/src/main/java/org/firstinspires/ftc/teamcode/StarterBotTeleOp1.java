@@ -27,7 +27,9 @@ public class StarterBotTeleOp1 extends LinearOpMode {
     private DcMotor motor;
     private Servo Hood;
     boolean shooting = false;
+    boolean shootingSingle = false;
     boolean sensToggle = true;
+    private int hoodAngle = 0;
 
     double currentX;
     double currentY;
@@ -52,7 +54,7 @@ public class StarterBotTeleOp1 extends LinearOpMode {
                                 -gamepad1.left_stick_y * 0.85,
                                 -gamepad1.left_stick_x * 0.85
                         ),
-                        -gamepad1.right_stick_x * 2
+                        -gamepad1.right_stick_x * 1.5
                 ));
             } else {
                 drive.setDrivePowers(new PoseVelocity2d(
@@ -82,25 +84,57 @@ public class StarterBotTeleOp1 extends LinearOpMode {
                 timer.reset();
             }
 
-            if (gamepad2.dpad_up) {
-                Hood.setPosition(0);
-            } else if (gamepad2.dpad_down) {
-                Hood.setPosition(.125);
-            } else if (gamepad2.dpad_left) {
-                Hood.setPosition(0.08);
-            } else if (gamepad2.dpad_right) {
-                Hood.setPosition(.05);
-            }
-
-            if (gamepad1.yWasPressed() && sensToggle) {
-                sensToggle = false;
-            } else if (gamepad1.yWasReleased() && !sensToggle) {
-                sensToggle = true;
+            if (gamepad2.b && !shootingSingle) {
+                shootingSingle = true;
+                timer.reset();
             }
 
 
 
-            if (shooting) {
+
+            if(gamepad2.rightBumperWasReleased()) {
+                hoodAngle = hoodAngle + 1;
+            } else if (hoodAngle > 3) {
+                hoodAngle = 0;
+            } else if(gamepad2.leftBumperWasReleased()) {
+                hoodAngle = hoodAngle - 1;
+            } else if (hoodAngle < 0) {
+                hoodAngle = 3;
+            }
+
+            switch (hoodAngle){
+                case 0:
+                    Hood.setPosition(0);
+                    break;
+                case 1:
+                    Hood.setPosition(.115);
+                    break;
+                case 2:
+                    Hood.setPosition(.125);
+                    break;
+                /*case 3:
+                    Hood.setPosition(.13);
+                    break;*/
+                case 3: //4
+                    Hood.setPosition(.145);
+                    break;
+
+                //default:
+                // Hood.setPosition(0);
+            }
+
+
+
+            if (shootingSingle) {
+                shooter.singleShoot(timer, hoodAngle);
+
+                // Stop after full cycle (adjust time as needed)
+                if (timer.seconds() > 2.25) {   // <-- duration of full cycle
+                    shootingSingle = false;
+                    //shooter.shoot(0);           // stop motor
+                    //shooter.load(0);            // stop servos
+                }
+            } else if (shooting) {
                 shooter.shoot2(timer);
 
                 // Stop after full cycle (adjust time as needed)
@@ -110,20 +144,26 @@ public class StarterBotTeleOp1 extends LinearOpMode {
                     shooter.load(0);            // stop servos
                 }
             } else {
-               // shooter.shoot(-.05);
+                // shooter.shoot(-.05);
                 shooter.antiload(.15);
             }
 
 
+          /*  if (gamepad1.yWasReleased() && sensToggle) {
+                sensToggle = false;
+            } else if (gamepad1.yWasReleased() && !sensToggle) {
+                sensToggle = true;
+            } */
 
 
 
 
+
+            telemetry.addData("anglecase", hoodAngle);
             telemetry.addData("sensitivity", sensToggle);
             telemetry.addData("time", timer);
             telemetry.addData("motorspeed", motor.getPower());
             telemetry.addData("servopos", Hood.getPosition());
-
 
 
                     /*if (result.isValid()) {

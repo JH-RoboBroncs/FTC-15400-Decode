@@ -14,6 +14,7 @@ public class StarterBotShoot {
     private double ticksPerRotation;
     private int phase = 1;
     private int mphase = 1;
+    private int shootPhase = 0;
 
     public void init(HardwareMap hwMap) {
         motor = hwMap.get(DcMotorEx.class, "shooter");
@@ -98,6 +99,64 @@ public class StarterBotShoot {
                 break;
             default:
                 //motor.setPower(0);
+        }
+
+    }
+
+    public void singleShoot(ElapsedTime timer, int hoodPhase) {
+
+        //mphase = hoodPhase;
+
+         if (timer.seconds() < 2) { // 1st ball
+            mphase = hoodPhase + 1;
+        } else {
+            mphase = 0;
+        }
+
+
+         if (timer.seconds() > 1.25 && timer.seconds() < 1.5) {
+            phase = 2;
+        } else {
+            phase = 1; // idle
+        }
+
+
+
+
+
+        switch (phase){
+            case 1: // waiting
+                servoTwo.setPower(0);
+                servoOne.setPower(0);
+                break;
+            case 2:
+                servoOne.setPower(-.25);
+                servoTwo.setPower(.25);
+                break;
+            default:
+                servoTwo.setPower(0);
+                servoOne.setPower(0);
+        }
+
+         //raise motor speeds for steeper angles
+
+        switch (mphase){
+            case 0:
+                motor.setVelocity(0);
+                break;
+            case 1: // upclose
+                motor.setVelocity(ticksPerRotation/(1.1766/.45)); //.525
+                break;
+            case 2: // good for halfway
+                motor.setVelocity(ticksPerRotation/(1.1766/.525)); //.475
+                break;
+            case 3: // end of triangle
+                motor.setVelocity(ticksPerRotation/(1.1766/.6)); //.65
+                break;
+            case 4: //far triangle
+                motor.setVelocity(ticksPerRotation/(1.1766/.875)); //.925
+                break;
+
         }
 
     }

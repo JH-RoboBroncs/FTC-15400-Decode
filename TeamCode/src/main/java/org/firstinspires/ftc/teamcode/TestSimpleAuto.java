@@ -139,103 +139,6 @@ public class TestSimpleAuto extends LinearOpMode {
         }
 
 
-        public class shootGood implements Action {  // not working rn
-            private boolean initialized = false;
-
-            private int phase = 0;
-            private int mphase = 0;
-
-
-            // actions are formatted via telemetry packets as below
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-
-
-
-                //powers on motor, if it is not on
-                if (!initialized) {
-                    initialized = true;
-                    timer.reset();
-                    shooter.setPower(0);
-                    servoTwo.setPower(0);
-                    servoOne.setPower(0);
-                }
-
-                //timer.reset();
-                if (timer.seconds() > 7 && timer.seconds() < 9) { //3rd ball
-                    mphase = 2;
-                } else if (timer.seconds() > 5.5 && timer.seconds() < 7) { //2nd ball
-                    mphase = 3;
-                } else {
-                    mphase = 1;
-                }
-
-                if ((timer.seconds() > 5.35 && timer.seconds() < 5.5) || (timer.seconds() > 6.75 && timer.seconds() < 7) || (timer.seconds() > 8.5 && timer.seconds() < 9.5)) {
-                    phase = 2; // load
-        /*} else if ((timer.seconds() > 1.35 && timer.seconds() < 1.5)) {
-            phase = 3;*/
-                } else if (timer.seconds()< 4.75) {
-                    phase = 4;
-                } else {
-                    phase = 1; // idle
-                }
-
-
-                switch (phase){
-                    case 1: // waiting
-                        servoTwo.setPower(0);
-                        servoOne.setPower(0);
-                        break;
-                    case 2: //loading
-                        servoTwo.setPower(.25); //.65
-                        servoOne.setPower(-0.25);
-                        break;
-                    case 3: //loading
-                        servoTwo.setPower(.5);
-                        servoOne.setPower(-.5);
-                        break;
-                    case 4:
-                        servoOne.setPower(.65);
-                        servoTwo.setPower(-.65);
-                        break;
-                    default:
-                        servoTwo.setPower(0);
-                        servoOne.setPower(0);
-                }
-
-                switch (mphase){
-                    case 1: // waiting
-                        //motor.setPower(0);
-                        shooter.setVelocity(0);
-                        break;
-                    case 2: //loading
-                        //motor.setPower(.45); //1st ball
-                        shooter.setVelocity(ticksPerRotation/(1.1766/.475));
-                        break;
-                    case 3: //loading
-                        //motor.setPower(.45); // 2nd ball
-                        shooter.setVelocity(ticksPerRotation/(1.1766/.475));
-                        break;
-                    case 4: //loading
-                        //motor.setPower(.5); //3rd ball
-                        shooter.setVelocity(ticksPerRotation/(1.1766/.425));
-                        break;
-                    default:
-                        //motor.setPower(0);
-                }
-
-
-                packet.fieldOverlay().setStroke("#3F51B5");
-                Drawing.drawRobot(packet.fieldOverlay(), localizerPose);
-                FtcDashboard.getInstance().sendTelemetryPacket(packet);
-
-                telemetry.update();
-                drive.updatePoseEstimate();
-
-                return opModeIsActive(); //true;
-            }
-
-        }
 
         public class rangedShoot implements Action {  // not working rn
             private boolean initialized = false;
@@ -272,7 +175,7 @@ public class TestSimpleAuto extends LinearOpMode {
 
 
                 //timer.reset();
-                if (timer.seconds() > 7.2 && timer.seconds() < 9) { //3rd ball
+                if (timer.seconds() > 7.2 && timer.seconds() < 9.65) { //3rd ball
                     mphase = 2;
                 } else if (timer.seconds() > 5.6 && timer.seconds() < 7.15) { //2nd
                     mphase = 4;
@@ -282,7 +185,7 @@ public class TestSimpleAuto extends LinearOpMode {
                     mphase = 1;
                 }
 
-                if ((timer.seconds() > 5.35 && timer.seconds() < 5.5) || (timer.seconds() > 7 && timer.seconds() < 7.15) || (timer.seconds() > 8.65 && timer.seconds() < 8.8)) {
+                if ((timer.seconds() > 5.25 && timer.seconds() < 5.5) || (timer.seconds() > 7 && timer.seconds() < 7.25) || (timer.seconds() > 8.75 && timer.seconds() < 9.5)) {
                     phase = 2; // load
                     servoing = true;
                 } else if (timer.seconds()< 4) {
@@ -322,13 +225,13 @@ public class TestSimpleAuto extends LinearOpMode {
                         shooter.setVelocity(0);
                         break;
                     case 2: //3rd ball
-                        shooter.setVelocity(ticksPerRotation/(1.1766/.625));
+                        shooter.setVelocity(ticksPerRotation/(1.1766/.65)); //625
                         break;
                     case 3: //1st
-                        shooter.setVelocity(ticksPerRotation/(1.1766/.525));
+                        shooter.setVelocity(ticksPerRotation/(1.1766/.55)); //525
                         break;
                     case 4: //2nd
-                        shooter.setVelocity(ticksPerRotation/(1.1766/.65));
+                        shooter.setVelocity(ticksPerRotation/(1.1766/.65)); //625
                         break;
                     default:
                         //motor.setPower(0);
@@ -357,10 +260,6 @@ public class TestSimpleAuto extends LinearOpMode {
         //turns these into actions to be used in actions.runblocking (question mark?)
         public Action faceTag() {
             return new TestSimpleAuto.AprilTagss.faceTag();
-        }
-
-        public Action goodShoot() {
-            return new TestSimpleAuto.AprilTagss.shootGood();
         }
 
         public Action rangedShoot() {
@@ -401,8 +300,8 @@ public class TestSimpleAuto extends LinearOpMode {
         Action trajectoryActionCloseOut = poo.endTrajectory().fresh()
                 .waitSeconds(9.5)
                 .setTangent(0)
-                .splineToConstantHeading(new Vector2d(36, -12), (3*Math.PI / 2))
-             //   .splineToLinearHeading(new Pose2d( 60, 45, Math.toRadians(270)), (3*Math.PI / 2)) // 60, -60, Math.toRadians(270)
+                .splineToLinearHeading(new Pose2d(36, -12 , Math.toRadians(180)), (Math.PI / 2)) // -55,-55
+               // .splineToConstantHeading(new Vector2d(36, -12), (3*Math.PI / 2))
                 .build();
 
 
