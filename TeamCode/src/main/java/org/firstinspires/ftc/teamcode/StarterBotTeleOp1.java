@@ -30,6 +30,7 @@ public class StarterBotTeleOp1 extends LinearOpMode {
     boolean shootingSingle = false;
     boolean sensToggle = true;
     private int hoodAngle = 0;
+    private double ticksperrev;
 
     double currentX;
     double currentY;
@@ -41,11 +42,14 @@ public class StarterBotTeleOp1 extends LinearOpMode {
         motor = hardwareMap.get(DcMotorEx.class, "shooter");
         Hood = hardwareMap.get(Servo.class, "hoodServo");
 
+
         MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(60, 0, Math.toRadians(180)));
         shooter.init(hardwareMap);
 
 
         waitForStart();
+
+        ticksperrev = motor.getCurrentPosition();
 
         while (opModeIsActive()) {
             if (sensToggle) {
@@ -131,8 +135,7 @@ public class StarterBotTeleOp1 extends LinearOpMode {
                 // Stop after full cycle (adjust time as needed)
                 if (timer.seconds() > 2.25) {   // <-- duration of full cycle
                     shootingSingle = false;
-                    //shooter.shoot(0);           // stop motor
-                    //shooter.load(0);            // stop servos
+
                 }
             } else if (shooting) {
                 shooter.shoot2(timer);
@@ -140,8 +143,7 @@ public class StarterBotTeleOp1 extends LinearOpMode {
                 // Stop after full cycle (adjust time as needed)
                 if (timer.seconds() > 5) {   // <-- duration of full cycle
                     shooting = false;
-                    shooter.shoot(0);           // stop motor
-                    shooter.load(0);            // stop servos
+
                 }
             } else {
                 // shooter.shoot(-.05);
@@ -164,6 +166,8 @@ public class StarterBotTeleOp1 extends LinearOpMode {
             telemetry.addData("time", timer);
             telemetry.addData("motorspeed", motor.getPower());
             telemetry.addData("servopos", Hood.getPosition());
+            telemetry.addData("ticks/rev", ticksperrev);
+           // telemetry.addData("rpm", ticks/60 )
 
 
                     /*if (result.isValid()) {
