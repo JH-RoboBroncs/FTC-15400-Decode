@@ -49,7 +49,7 @@ public class StarterBotTeleOp1 extends LinearOpMode {
 
         waitForStart();
 
-        ticksperrev = motor.getCurrentPosition();
+
 
         while (opModeIsActive()) {
             if (sensToggle) {
@@ -81,6 +81,8 @@ public class StarterBotTeleOp1 extends LinearOpMode {
                 shooter.load(0);
             }*/
 
+
+            ticksperrev = motor.getCurrentPosition();
 
 
             if (gamepad2.x && !shooting) {
