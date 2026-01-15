@@ -153,10 +153,10 @@ public class StarterBotTeleOp1 extends LinearOpMode {
 
 
             if (shootingSingle) {
-                shooter.singleShoot(timer, hoodAngle);
+                shooter.velocityShoot(hoodAngle);
 
                 // Stop after full cycle (adjust time as needed)
-                if (timer.seconds() > 2.25) {   // <-- duration of full cycle
+                if (!shooter.velocityShoot(hoodAngle)) {   // <-- duration of full cycle
                     shootingSingle = false;
 
                 }

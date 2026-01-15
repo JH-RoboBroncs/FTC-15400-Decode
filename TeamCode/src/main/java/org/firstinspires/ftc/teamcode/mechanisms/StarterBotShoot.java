@@ -1,13 +1,9 @@
 package org.firstinspires.ftc.teamcode.mechanisms;
 
-import com.qualcomm.robotcore.hardware.DcMotor;
-
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
-
-import java.sql.Time;
 
 public class StarterBotShoot {
     private DcMotorEx motor;
@@ -169,24 +165,24 @@ public class StarterBotShoot {
     }
 
 
-    public void velocityShoot(ElapsedTime timer, int hoodPhase) throws InterruptedException {
+    public boolean velocityShoot(int hoodPhase) throws InterruptedException {
 
 
         double targetRPM = 0;
-        double storedTime = timer.seconds();
 
         mphase = hoodPhase + 1;
 
 
+synchronized (this) {
 
-
-        if (ticksperrev < targetRPM + 150 && ticksperrev > targetRPM - 150) {
-            phase = 2;
-            wait(250);
-        } else {
-            phase = 1; // idle
-        }
-
+    if (ticksperrev < targetRPM + 150 && ticksperrev > targetRPM - 150) {
+        phase = 2;
+        this.wait(250);
+        return false;
+    } else {
+        phase = 1; // idle
+    }
+}
 
 
 
@@ -231,6 +227,7 @@ public class StarterBotShoot {
 
         }
 
+        return true;
     }
 
 
