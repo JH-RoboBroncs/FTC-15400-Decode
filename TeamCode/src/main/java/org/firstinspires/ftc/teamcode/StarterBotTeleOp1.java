@@ -156,7 +156,7 @@ public class StarterBotTeleOp1 extends LinearOpMode {
                 shooter.velocityShoot(hoodAngle);
 
                 // Stop after full cycle (adjust time as needed)
-                if (!shooter.velocityShoot(hoodAngle)) {   // <-- duration of full cycle
+                if (timer.seconds() > 6) {   // <-- duration of full cycle
                     shootingSingle = false;
 
                 }
@@ -187,7 +187,7 @@ public class StarterBotTeleOp1 extends LinearOpMode {
             telemetry.addData("anglecase", hoodAngle);
          //   telemetry.addData("sensitivity", sensToggle);
             telemetry.addData("time", timer);
-            telemetry.addData("servopos", Hood.getPosition());
+            telemetry.addData("shootingsingle", shootingSingle);
             telemetry.addData("ticks/rev", ticksperrev);
             telemetry.addData("targetRPM", targetRPM);
 

@@ -13,7 +13,7 @@ public class StarterBotShoot {
     private int phase = 1;
     private int mphase = 1;
     private int shootPhase = 0;
-    private double ticksperrev;
+  //  private double ticksperrev;
     private double targetRPM;
 
     public void init(HardwareMap hwMap) {
@@ -22,7 +22,7 @@ public class StarterBotShoot {
         servoTwo = hwMap.get(CRServo.class, "servoTwo");
         motor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         ticksPerRotation = motor.getMotorType().getTicksPerRev();
-        ticksperrev = motor.getVelocity()/28 * 60;
+       // ticksperrev = motor.getVelocity()/28 * 60;
     }
 
 
@@ -165,24 +165,26 @@ public class StarterBotShoot {
     }
 
 
-    public boolean velocityShoot(int hoodPhase) throws InterruptedException {
+    public void velocityShoot(int hoodPhase) throws InterruptedException {
 
+        double ticksperrev = (motor.getVelocity()/60) *28;
 
         double targetRPM = 0;
 
         mphase = hoodPhase + 1;
 
 
-synchronized (this) {
 
-    if (ticksperrev < targetRPM + 150 && ticksperrev > targetRPM - 150) {
-        phase = 2;
-        this.wait(250);
-        return false;
-    } else {
-        phase = 1; // idle
-    }
-}
+
+     if (ticksperrev < targetRPM + 150 && ticksperrev > targetRPM - 150 && targetRPM != 0) {
+         phase = 2;
+         //Thread.sleep(250);
+
+         // return false;
+     } else {
+         phase = 1; // idle
+     }
+
 
 
 
@@ -205,29 +207,30 @@ synchronized (this) {
 
         switch (mphase){
             case 0:
+                targetRPM = 0;
                 motor.setVelocity(0);
                 break;
             case 1: // upclose
                 targetRPM = 2750;
-                motor.setVelocity((2750/60)*28); //.525
+                motor.setVelocity(((double) 2750 /60)*28); //.525
                 break;
             case 2: // good for halfway
                 targetRPM = 2600;
-                motor.setVelocity((2600/60)*60); //.475
+                motor.setVelocity(((double) 2600 /60)*28); //.475
                 break;
             case 3: // end of triangle
                 targetRPM = 3250;
-                motor.setVelocity((3250/60)*28); //.65
+                motor.setVelocity(((double) 3250 /60)*28); //.65
                 break;
             case 4: //far triangle
                 targetRPM = 4500;
-                motor.setVelocity((4500/60)*28);
+                motor.setVelocity(((double) 4500 /60)*28);
                 // motor.setVelocity(ticksPerRotation/(1.1766/.925)); //.925
                 break;
 
         }
 
-        return true;
+        //return true;
     }
 
 
