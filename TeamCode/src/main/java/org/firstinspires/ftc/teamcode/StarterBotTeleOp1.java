@@ -24,13 +24,14 @@ public class StarterBotTeleOp1 extends LinearOpMode {
     private Limelight3A limelight;
 
     StarterBotShoot shooter = new StarterBotShoot();
-    private DcMotor motor;
+    private DcMotorEx motor;
     private Servo Hood;
     boolean shooting = false;
     boolean shootingSingle = false;
     boolean sensToggle = true;
     private int hoodAngle = 0;
     private double ticksperrev;
+    private double targetRPM = 1000;
 
     double currentX;
     double currentY;
@@ -73,16 +74,36 @@ public class StarterBotTeleOp1 extends LinearOpMode {
                 shooter.shoot(.45);
             } else {
                 shooter.shoot(0);
-            }
+            }*/
 
-            if (gamepad2.b) {
+            /*if (gamepad2.dpad_left) {
                 shooter.load(.55);
                 } else {
                 shooter.load(0);
             }*/
 
 
-            ticksperrev = motor.getCurrentPosition();
+
+            if(gamepad2.dpadUpWasReleased()) {
+                targetRPM = targetRPM + 250;
+            } else if(gamepad2.dpadDownWasReleased()) {
+                targetRPM = targetRPM - 250;
+            }
+
+
+            ticksperrev = motor.getVelocity()/28 * 60; //ticks per second -> rpm
+
+            if (gamepad2.y) {
+                motor.setVelocity((targetRPM/60)*28);  //target RPM/60(seconds)*28 (ticks/revolution)
+                if (ticksperrev < targetRPM + 200 && ticksperrev > targetRPM - 200) {
+                    shooter.load(.55);
+                } else {
+                    shooter.load(0);
+                }
+            } else {
+                motor.setVelocity(0);
+            }
+
 
 
             if (gamepad2.x && !shooting) {
@@ -149,7 +170,7 @@ public class StarterBotTeleOp1 extends LinearOpMode {
                 }
             } else {
                 // shooter.shoot(-.05);
-                shooter.antiload(.15);
+                //shooter.antiload(.15);
             }
 
 
@@ -164,11 +185,12 @@ public class StarterBotTeleOp1 extends LinearOpMode {
 
 
             telemetry.addData("anglecase", hoodAngle);
-            telemetry.addData("sensitivity", sensToggle);
+         //   telemetry.addData("sensitivity", sensToggle);
             telemetry.addData("time", timer);
-            telemetry.addData("motorspeed", motor.getPower());
             telemetry.addData("servopos", Hood.getPosition());
             telemetry.addData("ticks/rev", ticksperrev);
+            telemetry.addData("targetRPM", targetRPM);
+
            // telemetry.addData("rpm", ticks/60 )
 
 

@@ -7,6 +7,8 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import java.sql.Time;
+
 public class StarterBotShoot {
     private DcMotorEx motor;
     private CRServo servoOne;
@@ -15,6 +17,8 @@ public class StarterBotShoot {
     private int phase = 1;
     private int mphase = 1;
     private int shootPhase = 0;
+    private double ticksperrev;
+    private double targetRPM;
 
     public void init(HardwareMap hwMap) {
         motor = hwMap.get(DcMotorEx.class, "shooter");
@@ -22,7 +26,7 @@ public class StarterBotShoot {
         servoTwo = hwMap.get(CRServo.class, "servoTwo");
         motor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         ticksPerRotation = motor.getMotorType().getTicksPerRev();
-
+        ticksperrev = motor.getVelocity()/28 * 60;
     }
 
 
@@ -156,12 +160,79 @@ public class StarterBotShoot {
                 motor.setVelocity(ticksPerRotation/(1.1766/.6)); //.65
                 break;
             case 4: //far triangle
-                motor.setVelocity(ticksPerRotation/(1.1766/.925)); //.925
+                motor.setVelocity(3000);
+               // motor.setVelocity(ticksPerRotation/(1.1766/.925)); //.925
                 break;
 
         }
 
     }
+
+
+    public void velocityShoot(ElapsedTime timer, int hoodPhase) throws InterruptedException {
+
+
+        double targetRPM = 0;
+        double storedTime = timer.seconds();
+
+        mphase = hoodPhase + 1;
+
+
+
+
+        if (ticksperrev < targetRPM + 150 && ticksperrev > targetRPM - 150) {
+            phase = 2;
+            wait(250);
+        } else {
+            phase = 1; // idle
+        }
+
+
+
+
+
+        switch (phase){
+            case 1: // waiting
+                servoTwo.setPower(0);
+                servoOne.setPower(0);
+                break;
+            case 2:
+                servoOne.setPower(-.25);
+                servoTwo.setPower(.25);
+                break;
+            default:
+                servoTwo.setPower(0);
+                servoOne.setPower(0);
+        }
+
+        //raise motor speeds for steeper angles
+
+        switch (mphase){
+            case 0:
+                motor.setVelocity(0);
+                break;
+            case 1: // upclose
+                targetRPM = 2750;
+                motor.setVelocity((2750/60)*28); //.525
+                break;
+            case 2: // good for halfway
+                targetRPM = 2600;
+                motor.setVelocity((2600/60)*60); //.475
+                break;
+            case 3: // end of triangle
+                targetRPM = 3250;
+                motor.setVelocity((3250/60)*28); //.65
+                break;
+            case 4: //far triangle
+                targetRPM = 4500;
+                motor.setVelocity((4500/60)*28);
+                // motor.setVelocity(ticksPerRotation/(1.1766/.925)); //.925
+                break;
+
+        }
+
+    }
+
 
     public void antiload(double speed) {
         servoTwo.setPower(-speed);
