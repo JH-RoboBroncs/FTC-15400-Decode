@@ -93,7 +93,7 @@ public class StarterBotTeleOp1 extends LinearOpMode {
 
             ticksperrev = motor.getVelocity()/28 * 60; //ticks per second -> rpm
 
-            if (gamepad2.y) {
+         /*   if (gamepad2.y) {
                 motor.setVelocity((targetRPM/60)*28);  //target RPM/60(seconds)*28 (ticks/revolution)
                 if (ticksperrev < targetRPM + 200 && ticksperrev > targetRPM - 200) {
                     shooter.load(.55);
@@ -102,7 +102,7 @@ public class StarterBotTeleOp1 extends LinearOpMode {
                 }
             } else {
                 motor.setVelocity(0);
-            }
+            } */
 
 
 
@@ -113,7 +113,7 @@ public class StarterBotTeleOp1 extends LinearOpMode {
 
             if (gamepad2.b && !shootingSingle) {
                 shootingSingle = true;
-                timer.reset();
+               // timer.reset();
             }
 
 
@@ -131,18 +131,22 @@ public class StarterBotTeleOp1 extends LinearOpMode {
 
             switch (hoodAngle){
                 case 0:
+                    targetRPM = 2750;
                     Hood.setPosition(0);
                     break;
                 case 1:
+                    targetRPM = 2600;
                     Hood.setPosition(.115);
                     break;
                 case 2:
+                    targetRPM = 3250;
                     Hood.setPosition(.125);
                     break;
                 /*case 3:
                     Hood.setPosition(.13);
                     break;*/
                 case 3: //4
+                    targetRPM = 4500;
                     Hood.setPosition(.145);
                     break;
 
@@ -153,13 +157,12 @@ public class StarterBotTeleOp1 extends LinearOpMode {
 
 
             if (shootingSingle) {
-                shooter.velocityShoot(hoodAngle);
+                shooter.velocityShoot(hoodAngle, timer, targetRPM);
 
                 // Stop after full cycle (adjust time as needed)
-                if (timer.seconds() > 6) {   // <-- duration of full cycle
-                    shootingSingle = false;
+                // <-- duration of full cycle
+                shootingSingle = !shooter.velocityShoot(hoodAngle, timer, targetRPM);
 
-                }
             } else if (shooting) {
                 shooter.shoot2(timer);
 
@@ -168,9 +171,6 @@ public class StarterBotTeleOp1 extends LinearOpMode {
                     shooting = false;
 
                 }
-            } else {
-                // shooter.shoot(-.05);
-                //shooter.antiload(.15);
             }
 
 
@@ -191,7 +191,7 @@ public class StarterBotTeleOp1 extends LinearOpMode {
             telemetry.addData("ticks/rev", ticksperrev);
             telemetry.addData("targetRPM", targetRPM);
 
-           // telemetry.addData("rpm", ticks/60 )
+
 
 
                     /*if (result.isValid()) {

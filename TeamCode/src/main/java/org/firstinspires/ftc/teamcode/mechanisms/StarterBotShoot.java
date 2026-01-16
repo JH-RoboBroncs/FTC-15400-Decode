@@ -165,11 +165,10 @@ public class StarterBotShoot {
     }
 
 
-    public void velocityShoot(int hoodPhase) throws InterruptedException {
-
+    public boolean velocityShoot(int hoodPhase, ElapsedTime timer, double targetRPM) throws InterruptedException {
         double ticksperrev = (motor.getVelocity()/60) *28;
 
-        double targetRPM = 0;
+     //   double targetRPM = 0;
 
         mphase = hoodPhase + 1;
 
@@ -177,15 +176,19 @@ public class StarterBotShoot {
 
 
      if (ticksperrev < targetRPM + 150 && ticksperrev > targetRPM - 150 && targetRPM != 0) {
+         timer.reset();
          phase = 2;
-         //Thread.sleep(250);
 
-         // return false;
+         if (timer.seconds() > .25) {
+             phase = 1;
+             return true;
+         }
+
+
      } else {
          phase = 1; // idle
+         return false;
      }
-
-
 
 
 
@@ -207,23 +210,23 @@ public class StarterBotShoot {
 
         switch (mphase){
             case 0:
-                targetRPM = 0;
+
                 motor.setVelocity(0);
                 break;
             case 1: // upclose
-                targetRPM = 2750;
+
                 motor.setVelocity(((double) 2750 /60)*28); //.525
                 break;
             case 2: // good for halfway
-                targetRPM = 2600;
+
                 motor.setVelocity(((double) 2600 /60)*28); //.475
                 break;
             case 3: // end of triangle
-                targetRPM = 3250;
+
                 motor.setVelocity(((double) 3250 /60)*28); //.65
                 break;
             case 4: //far triangle
-                targetRPM = 4500;
+
                 motor.setVelocity(((double) 4500 /60)*28);
                 // motor.setVelocity(ticksPerRotation/(1.1766/.925)); //.925
                 break;
@@ -231,6 +234,7 @@ public class StarterBotShoot {
         }
 
         //return true;
+        return false;
     }
 
 
