@@ -22,6 +22,7 @@ import org.firstinspires.ftc.teamcode.mechanisms.StarterBotShoot;
 public class StarterBotTeleOp1 extends LinearOpMode {
 
     private ElapsedTime timer = new ElapsedTime();
+
     private Limelight3A limelight;
 
     StarterBotShoot shooter = new StarterBotShoot();
@@ -32,11 +33,13 @@ public class StarterBotTeleOp1 extends LinearOpMode {
     boolean shooting = false;
     boolean shootingSingle = false;
     boolean sensToggle = true;
+    boolean resetTimer = false;
+
     private int hoodAngle = 0;
     private double ticksperrev;
     private double targetRPM = 1000;
     private int phase;
-    private int counter;
+
 
     double currentX;
     double currentY;
@@ -178,30 +181,32 @@ public class StarterBotTeleOp1 extends LinearOpMode {
 
 
 
-            if (shootingSingle) {
-               // shooter.velocityShoot(hoodAngle, timer, targetRPM);
 
-                // Stop after full cycle (adjust time as needed)
-                // <-- duration of full cycle
+
+            if (shootingSingle) {
+
+                if (resetTimer) {
+                    timer.reset();
+                    resetTimer = false;
+                }
+
                 motor.setVelocity((targetRPM/60)*28);
 
-                if (ticksperrev < targetRPM + 150 && ticksperrev > targetRPM - 150) {
-                   timer.reset();
+                if (ticksperrev < targetRPM + 100 && ticksperrev > targetRPM - 100) {
+                    resetTimer = true;
                     phase = 2;
-
-                    if (timer.seconds() > .25) {
-                        phase = 1;
-                        shootingSingle = false;
-                    }
-                } else {
-                    phase = 1; // idle
-
+                   if (timer.seconds() > .25) {
+                       phase = 1;
+                       if (timer.seconds() > 1) {
+                           shootingSingle = false;
+                       }
+                   }
                 }
 
 
             } else {
                 motor.setVelocity(0);
-            counter = 0;
+
 
 
             /*else if (shooting) {
