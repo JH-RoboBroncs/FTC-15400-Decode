@@ -9,6 +9,7 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -25,6 +26,8 @@ public class StarterBotTeleOp1 extends LinearOpMode {
 
     StarterBotShoot shooter = new StarterBotShoot();
     private DcMotorEx motor;
+    private CRServo servoOne;
+    private CRServo servoTwo;
     private Servo Hood;
     boolean shooting = false;
     boolean shootingSingle = false;
@@ -32,6 +35,8 @@ public class StarterBotTeleOp1 extends LinearOpMode {
     private int hoodAngle = 0;
     private double ticksperrev;
     private double targetRPM = 1000;
+    private int phase;
+    private int counter;
 
     double currentX;
     double currentY;
@@ -42,6 +47,8 @@ public class StarterBotTeleOp1 extends LinearOpMode {
        // limelight.start();
         motor = hardwareMap.get(DcMotorEx.class, "shooter");
         Hood = hardwareMap.get(Servo.class, "hoodServo");
+        servoOne = hardwareMap.get(CRServo.class, "servoOne");
+        servoTwo = hardwareMap.get(CRServo.class, "servoTwo");
 
 
         MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(60, 0, Math.toRadians(180)));
@@ -154,23 +161,57 @@ public class StarterBotTeleOp1 extends LinearOpMode {
                 // Hood.setPosition(0);
             }
 
+            switch (phase){
+                case 1: // waiting
+                    servoTwo.setPower(0);
+                    servoOne.setPower(0);
+                    break;
+                case 2:
+                    servoOne.setPower(-.25);
+                    servoTwo.setPower(.25);
+                    break;
+                default:
+                    servoTwo.setPower(0);
+                    servoOne.setPower(0);
+            }
+
+
 
 
             if (shootingSingle) {
-                shooter.velocityShoot(hoodAngle, timer, targetRPM);
+               // shooter.velocityShoot(hoodAngle, timer, targetRPM);
 
                 // Stop after full cycle (adjust time as needed)
                 // <-- duration of full cycle
-                shootingSingle = !shooter.velocityShoot(hoodAngle, timer, targetRPM);
+                motor.setVelocity((targetRPM/60)*28);
 
-            } else if (shooting) {
+                if (ticksperrev < targetRPM + 150 && ticksperrev > targetRPM - 150) {
+                   timer.reset();
+                    phase = 2;
+
+                    if (timer.seconds() > .25) {
+                        phase = 1;
+                        shootingSingle = false;
+                    }
+                } else {
+                    phase = 1; // idle
+
+                }
+
+
+            } else {
+                motor.setVelocity(0);
+            counter = 0;
+
+
+            /*else if (shooting) {
                 shooter.shoot2(timer);
 
                 // Stop after full cycle (adjust time as needed)
                 if (timer.seconds() > 5) {   // <-- duration of full cycle
                     shooting = false;
 
-                }
+                }*/
             }
 
 
