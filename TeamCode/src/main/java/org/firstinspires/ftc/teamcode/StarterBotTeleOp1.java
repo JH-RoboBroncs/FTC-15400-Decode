@@ -14,6 +14,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.mechanisms.StarterBotShoot;
@@ -22,6 +24,7 @@ import org.firstinspires.ftc.teamcode.mechanisms.StarterBotShoot;
 public class StarterBotTeleOp1 extends LinearOpMode {
 
     private ElapsedTime timer = new ElapsedTime();
+
 
     private Limelight3A limelight;
 
@@ -39,8 +42,16 @@ public class StarterBotTeleOp1 extends LinearOpMode {
     private int hoodAngle = 0;
     private double ticksperrev;
     private double targetRPM = 1000;
-    private int phase;
+    private int phase = 0;
 
+    private Timer time = new Timer();
+    private TimerTask task = new TimerTask() {
+        @Override
+        public void run() {
+            shootingSingle = false;
+            phase = 1;
+        }
+    };
 
     double currentX;
     double currentY;
@@ -174,6 +185,7 @@ public class StarterBotTeleOp1 extends LinearOpMode {
                     timer.reset();
                     servoOne.setPower(-.25);
                     servoTwo.setPower(.25);
+                    time.schedule(task, 1);
                     break;
                 case 3:
                     timer.reset();
@@ -186,30 +198,36 @@ public class StarterBotTeleOp1 extends LinearOpMode {
 
 
 
-            if (resetTimer && count == 1) {
-                timer.reset();
 
-            }
 
 
             if (shootingSingle) {
 
                 motor.setVelocity((targetRPM/60)*28);
 
-                if (ticksperrev < targetRPM + 100 && ticksperrev > targetRPM - 100) {
+               /* if (ticksperrev < targetRPM + 100 && ticksperrev > targetRPM - 100) {
                   phase = 2;
                   resetTimer = true;
 
-                   if (timer.seconds() > .25 && resetTimer) {
-                       phase = 1;
+                   if (timer.seconds() > .75 && resetTimer) {
+                   //    phase = 1;
+                       resetTimer = false;
                        shootingSingle = false;
                    }
-                } else { phase = 1; }
+                } */
+
+                if (ticksperrev < targetRPM + 100 && ticksperrev > targetRPM - 100 && !resetTimer) {
+                    phase = 2;
+                    resetTimer = true;
+
+                }
 
 
             } else {
+                phase = 1;
                // resetTimer = false;
                 motor.setVelocity(0);
+                resetTimer = false;
 
 
 
