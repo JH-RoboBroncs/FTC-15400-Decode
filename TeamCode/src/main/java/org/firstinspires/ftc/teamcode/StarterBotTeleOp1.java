@@ -34,6 +34,7 @@ public class StarterBotTeleOp1 extends LinearOpMode {
     boolean shootingSingle = false;
     boolean sensToggle = true;
     boolean resetTimer = false;
+    private double count = 0;
 
     private int hoodAngle = 0;
     private double ticksperrev;
@@ -170,8 +171,12 @@ public class StarterBotTeleOp1 extends LinearOpMode {
                     servoOne.setPower(0);
                     break;
                 case 2:
+                    timer.reset();
                     servoOne.setPower(-.25);
                     servoTwo.setPower(.25);
+                    break;
+                case 3:
+                    timer.reset();
                     break;
                 default:
                     servoTwo.setPower(0);
@@ -181,32 +186,31 @@ public class StarterBotTeleOp1 extends LinearOpMode {
 
 
 
+            if (resetTimer && count == 1) {
+                timer.reset();
+
+            }
 
 
             if (shootingSingle) {
 
-                if (resetTimer) {
-                    timer.reset();
-                    resetTimer = false;
-                }
-
                 motor.setVelocity((targetRPM/60)*28);
 
                 if (ticksperrev < targetRPM + 100 && ticksperrev > targetRPM - 100) {
-                    resetTimer = true;
+                  phase = 2;
+                  resetTimer = true;
 
-
-                   if (timer.seconds() < .25) {
-                       phase = 2;
-                       if (timer.seconds() > .5) {
-                           shootingSingle = false;
-                       }
+                   if (timer.seconds() > .25 && resetTimer) {
+                       phase = 1;
+                       shootingSingle = false;
                    }
                 } else { phase = 1; }
 
 
             } else {
+               // resetTimer = false;
                 motor.setVelocity(0);
+
 
 
 
@@ -237,6 +241,7 @@ public class StarterBotTeleOp1 extends LinearOpMode {
             telemetry.addData("shootingsingle", shootingSingle);
             telemetry.addData("ticks/rev", ticksperrev);
             telemetry.addData("targetRPM", targetRPM);
+            telemetry.addData("phase", phase);
 
 
 
