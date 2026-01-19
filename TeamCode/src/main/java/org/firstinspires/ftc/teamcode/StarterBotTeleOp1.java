@@ -135,6 +135,7 @@ public class StarterBotTeleOp1 extends LinearOpMode {
 
             if (gamepad2.b && !shootingSingle) {
                 shootingSingle = true;
+                phase = 1;
                 timer.reset();
             }
 
@@ -205,29 +206,26 @@ public class StarterBotTeleOp1 extends LinearOpMode {
 
                 motor.setVelocity((targetRPM/60)*28);
 
-               /* if (ticksperrev < targetRPM + 100 && ticksperrev > targetRPM - 100) {
+                if (phase == 1 && (ticksperrev < targetRPM + 100 && ticksperrev > targetRPM - 100)) {
                   phase = 2;
-                  resetTimer = true;
+                  timer.reset();
 
-                   if (timer.seconds() > .75 && resetTimer) {
-                   //    phase = 1;
-                       resetTimer = false;
-                       shootingSingle = false;
+                   if (timer.seconds() > .25) {
+                       phase = 1;
                    }
-                } */
+                } 
 
-                if (ticksperrev < targetRPM + 100 && ticksperrev > targetRPM - 100 && !resetTimer) {
+               /* if (ticksperrev < targetRPM + 100 && ticksperrev > targetRPM - 100 && !resetTimer) {
                     phase = 2;
                     resetTimer = true;
 
-                }
+                }*/
 
 
             } else {
                 phase = 1;
                // resetTimer = false;
                 motor.setVelocity(0);
-                resetTimer = false;
 
 
 
