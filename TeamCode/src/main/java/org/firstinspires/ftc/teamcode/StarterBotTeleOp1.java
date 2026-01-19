@@ -44,14 +44,6 @@ public class StarterBotTeleOp1 extends LinearOpMode {
     private double targetRPM = 1000;
     private int phase = 0;
 
-    private Timer time = new Timer();
-    private TimerTask task = new TimerTask() {
-        @Override
-        public void run() {
-            shootingSingle = false;
-            phase = 1;
-        }
-    };
 
     double currentX;
     double currentY;
@@ -69,6 +61,8 @@ public class StarterBotTeleOp1 extends LinearOpMode {
         MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(60, 0, Math.toRadians(180)));
         shooter.init(hardwareMap);
 
+
+        Hood.setPosition(0);
 
         waitForStart();
 
@@ -153,15 +147,15 @@ public class StarterBotTeleOp1 extends LinearOpMode {
 
             switch (hoodAngle){
                 case 0:
-                    targetRPM = 2750;
-                    Hood.setPosition(0);
+                    targetRPM = 2250;
+                    Hood.setPosition(.05);
                     break;
                 case 1:
                     targetRPM = 2600;
                     Hood.setPosition(.115);
                     break;
                 case 2:
-                    targetRPM = 3250;
+                    targetRPM = 3000;
                     Hood.setPosition(.125);
                     break;
                 /*case 3:
@@ -182,13 +176,8 @@ public class StarterBotTeleOp1 extends LinearOpMode {
                     servoOne.setPower(0);
                     break;
                 case 2:
-                    timer.reset();
                     servoOne.setPower(-.25);
                     servoTwo.setPower(.25);
-                    time.schedule(task, 1);
-                    break;
-                case 3:
-                    timer.reset();
                     break;
                 default:
                     servoTwo.setPower(0);
@@ -205,21 +194,13 @@ public class StarterBotTeleOp1 extends LinearOpMode {
 
                 motor.setVelocity((targetRPM/60)*28);
 
-               /* if (ticksperrev < targetRPM + 100 && ticksperrev > targetRPM - 100) {
-                  phase = 2;
-                  resetTimer = true;
-
-                   if (timer.seconds() > .75 && resetTimer) {
-                   //    phase = 1;
-                       resetTimer = false;
-                       shootingSingle = false;
-                   }
-                } */
-
-                if (ticksperrev < targetRPM + 100 && ticksperrev > targetRPM - 100 && !resetTimer) {
+                if (phase == 1 && (ticksperrev < targetRPM + 100 && ticksperrev > targetRPM - 25)) {
+                    timer.reset();
                     phase = 2;
-                    resetTimer = true;
 
+
+                } else if (phase == 2 && timer.seconds() > .25) {
+                    shootingSingle = false;
                 }
 
 
@@ -227,7 +208,7 @@ public class StarterBotTeleOp1 extends LinearOpMode {
                 phase = 1;
                // resetTimer = false;
                 motor.setVelocity(0);
-                resetTimer = false;
+
 
 
 

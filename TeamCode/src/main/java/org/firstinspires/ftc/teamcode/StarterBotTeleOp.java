@@ -9,10 +9,13 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.mechanisms.StarterBotShoot;
@@ -21,21 +24,52 @@ import org.firstinspires.ftc.teamcode.mechanisms.StarterBotShoot;
 public class StarterBotTeleOp extends LinearOpMode {
 
     private ElapsedTime timer = new ElapsedTime();
+
+
     private Limelight3A limelight;
 
     StarterBotShoot shooter = new StarterBotShoot();
-    private DcMotor motor;
+    private DcMotorEx motor;
+    private CRServo servoOne;
+    private CRServo servoTwo;
+    private Servo Hood;
     boolean shooting = false;
+    boolean shootingSingle = false;
     boolean sensToggle = true;
+    boolean resetTimer = false;
+    private double count = 0;
+
+    private int hoodAngle = 0;
+    private double ticksperrev;
+    private double targetRPM = 1000;
+    private int phase = 0;
+
+    private double current_velocity;
+    private double current_time;
+    private double direction_multiplier;
+
+    private double position_error;
+    private double maximum_speed;
+    private double output_velocity;
+    private double outputVelocity;
+    private double output_accel;
+    private double outputAccel;
+    private double max_accel;
+    private double previous_time;
+
 
     double currentX;
     double currentY;
 
     @Override
     public void runOpMode() throws InterruptedException {
-        limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        limelight.start();
+        //limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        // limelight.start();
         motor = hardwareMap.get(DcMotorEx.class, "shooter");
+        Hood = hardwareMap.get(Servo.class, "hoodServo");
+        servoOne = hardwareMap.get(CRServo.class, "servoOne");
+        servoTwo = hardwareMap.get(CRServo.class, "servoTwo");
+
 
         MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(60, 0, Math.toRadians(180)));
         shooter.init(hardwareMap);
@@ -43,14 +77,45 @@ public class StarterBotTeleOp extends LinearOpMode {
 
         waitForStart();
 
+
+
         while (opModeIsActive()) {
+
+        current_velocity = motor.getVelocity();
+        current_time = timer.seconds();
+
+        direction_multiplier = 1;
+
+        if (position_error < 0) {
+            direction_multiplier = -1;
+        }
+
+        if (maximum_speed > Math.abs(current_velocity)) {
+            output_velocity = current_velocity + direction_multiplier * max_accel * (current_time - previous_time);
+            output_accel = max_accel;
+        } else {
+            output_velocity = maximum_speed;
+            outputAccel = 0;
+        }
+
+        if (position_error <= (output_velocity * output_velocity) / (2 * max_accel)) {
+            output_velocity = current_velocity - direction_multiplier * max_accel * (current_time - previous_time);
+            output_accel = -max_accel;
+        }
+
+        previous_time = current_time;
+
+
+
+
+
             if (sensToggle) {
                 drive.setDrivePowers(new PoseVelocity2d(
                         new Vector2d(
                                 -gamepad1.left_stick_y * 0.85,
                                 -gamepad1.left_stick_x * 0.85
                         ),
-                        -gamepad1.right_stick_x * 2
+                        -gamepad1.right_stick_x * 1.5
                 ));
             } else {
                 drive.setDrivePowers(new PoseVelocity2d(
@@ -65,13 +130,35 @@ public class StarterBotTeleOp extends LinearOpMode {
                 shooter.shoot(.45);
             } else {
                 shooter.shoot(0);
-            }
+            }*/
 
-            if (gamepad2.b) {
+            /*if (gamepad2.dpad_left) {
                 shooter.load(.55);
                 } else {
                 shooter.load(0);
             }*/
+
+
+
+            if(gamepad2.dpadUpWasReleased()) {
+                targetRPM = targetRPM + 250;
+            } else if(gamepad2.dpadDownWasReleased()) {
+                targetRPM = targetRPM - 250;
+            }
+
+
+            ticksperrev = motor.getVelocity()/28 * 60; //ticks per second -> rpm
+
+         /*   if (gamepad2.y) {
+                motor.setVelocity((targetRPM/60)*28);  //target RPM/60(seconds)*28 (ticks/revolution)
+                if (ticksperrev < targetRPM + 200 && ticksperrev > targetRPM - 200) {
+                    shooter.load(.55);
+                } else {
+                    shooter.load(0);
+                }
+            } else {
+                motor.setVelocity(0);
+            } */
 
 
 
@@ -80,39 +167,121 @@ public class StarterBotTeleOp extends LinearOpMode {
                 timer.reset();
             }
 
-            if (gamepad1.yWasPressed() && sensToggle) {
-                sensToggle = false;
-            } else if (gamepad1.yWasReleased() && !sensToggle) {
-                sensToggle = true;
+            if (gamepad2.b && !shootingSingle) {
+                shootingSingle = true;
+                timer.reset();
             }
 
 
 
-            if (shooting) {
+
+            if(gamepad2.rightBumperWasReleased()) {
+                hoodAngle = hoodAngle + 1;
+            } else if (hoodAngle > 3) {
+                hoodAngle = 0;
+            } else if(gamepad2.leftBumperWasReleased()) {
+                hoodAngle = hoodAngle - 1;
+            } else if (hoodAngle < 0) {
+                hoodAngle = 3;
+            }
+
+            switch (hoodAngle){
+                case 0:
+                    targetRPM = 2250;
+                    Hood.setPosition(.05);
+                    break;
+                case 1:
+                    targetRPM = 2600;
+                    Hood.setPosition(.115);
+                    break;
+                case 2:
+                    targetRPM = 3000;
+                    Hood.setPosition(.125);
+                    break;
+                /*case 3:
+                    Hood.setPosition(.13);
+                    break;*/
+                case 3: //4
+                    targetRPM = 4250;
+                    Hood.setPosition(.145);
+                    break;
+
+                //default:
+                // Hood.setPosition(0);
+            }
+
+            switch (phase){
+                case 1: // waiting
+                    servoTwo.setPower(0);
+                    servoOne.setPower(0);
+                    break;
+                case 2:
+                    servoOne.setPower(-.25);
+                    servoTwo.setPower(.25);
+                    break;
+                default:
+                    servoTwo.setPower(0);
+                    servoOne.setPower(0);
+            }
+
+
+
+
+
+
+
+            if (shootingSingle) {
+
+                motor.setVelocity((targetRPM/60)*28);
+
+                if (phase == 1 && (ticksperrev < targetRPM + 25 && ticksperrev > targetRPM - 25)) {
+                    timer.reset();
+                    phase = 2;
+
+
+                } else if (phase == 2 && timer.seconds() > .25) {
+                    shootingSingle = false;
+                }
+
+
+            } else {
+                phase = 1;
+                // resetTimer = false;
+                motor.setVelocity(0);
+
+
+
+
+
+            /*else if (shooting) {
                 shooter.shoot2(timer);
 
                 // Stop after full cycle (adjust time as needed)
                 if (timer.seconds() > 5) {   // <-- duration of full cycle
                     shooting = false;
-                    shooter.shoot(0);           // stop motor
-                    shooter.load(0);            // stop servos
-                }
-            } else {
-               // shooter.shoot(-.05);
-                shooter.antiload(.15);
+
+                }*/
             }
 
 
+          /*  if (gamepad1.yWasReleased() && sensToggle) {
+                sensToggle = false;
+            } else if (gamepad1.yWasReleased() && !sensToggle) {
+                sensToggle = true;
+            } */
 
-            LLResult result = limelight.getLatestResult();
-            double robotYaw = drive.localizer.getPose().heading.toDouble();
-            limelight.updateRobotOrientation(Math.toDegrees(robotYaw));
 
-            Pose2d pose = drive.localizer.getPose();
-            Pose2d mt2pose = new Pose2d(currentX*72, currentY*72, robotYaw);
-            telemetry.addData("sensitivity", sensToggle);
+
+
+
+            telemetry.addData("anglecase", hoodAngle);
+            //   telemetry.addData("sensitivity", sensToggle);
             telemetry.addData("time", timer);
-            telemetry.addData("motorspeed", motor.getPower());
+            telemetry.addData("shootingsingle", shootingSingle);
+            telemetry.addData("ticks/rev", ticksperrev);
+            telemetry.addData("targetRPM", targetRPM);
+            telemetry.addData("phase", phase);
+
 
 
 
@@ -126,28 +295,7 @@ public class StarterBotTeleOp extends LinearOpMode {
                                 telemetry.addData("Tag valid", fr.getFiducialId());
                             }
 
-                        } */if (result.isValid()) {
-                Pose3D botpose_mt2 = result.getBotpose_MT2();
-
-                if (botpose_mt2 != null) {
-                    double x = botpose_mt2.getPosition().x;
-                    double y = botpose_mt2.getPosition().y;
-                    double h = botpose_mt2.getOrientation().getYaw();
-                    currentX = x;
-                    currentY = y;
-                    Pose2d poopose = new Pose2d(currentX, currentY, robotYaw);
-
-                    telemetry.addData("MT2 Location:", poopose);
-                }
-            } else {
-                telemetry.addLine("No Tag");
-
-            }
-
-            TelemetryPacket packet = new TelemetryPacket();
-            packet.fieldOverlay().setStroke("#3F51B5");
-            Drawing.drawRobot(packet.fieldOverlay(), mt2pose);
-            FtcDashboard.getInstance().sendTelemetryPacket(packet);
+                        } */
 
             drive.updatePoseEstimate();
             telemetry.update();
