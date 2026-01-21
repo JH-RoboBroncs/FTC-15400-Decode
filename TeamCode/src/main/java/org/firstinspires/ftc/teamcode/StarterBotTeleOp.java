@@ -51,7 +51,6 @@ public class StarterBotTeleOp extends LinearOpMode {
     private double position_error;
     private double maximum_speed;
     private double output_velocity;
-    private double outputVelocity;
     private double output_accel;
     private double outputAccel;
     private double max_accel;
@@ -81,7 +80,12 @@ public class StarterBotTeleOp extends LinearOpMode {
 
         while (opModeIsActive()) {
 
+
+
         current_velocity = motor.getVelocity();
+
+        position_error = current_velocity - targetRPM;
+
         current_time = timer.seconds();
 
         direction_multiplier = 1;
@@ -102,6 +106,9 @@ public class StarterBotTeleOp extends LinearOpMode {
             output_velocity = current_velocity - direction_multiplier * max_accel * (current_time - previous_time);
             output_accel = -max_accel;
         }
+
+        telemetry.addData("output_velocity", output_velocity);
+        telemetry.addData("position_error", position_error);
 
         previous_time = current_time;
 
