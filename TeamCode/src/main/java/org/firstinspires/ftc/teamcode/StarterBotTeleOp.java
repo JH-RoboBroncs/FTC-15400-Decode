@@ -80,35 +80,28 @@ public class StarterBotTeleOp extends LinearOpMode {
 
         while (opModeIsActive()) {
 
-
-
         current_velocity = motor.getVelocity();
-
-        position_error = current_velocity - targetRPM;
 
         current_time = timer.seconds();
 
+        maximum_speed = targetRPM;
+
+        max_accel = 1250;
+
         direction_multiplier = 1;
 
-        if (position_error < 0) {
-            direction_multiplier = -1;
-        }
-
         if (maximum_speed > Math.abs(current_velocity)) {
-            output_velocity = current_velocity + direction_multiplier * max_accel * (current_time - previous_time);
+            output_velocity = current_velocity + direction_multiplier * max_accel; //* (current_time - previous_time);
             output_accel = max_accel;
         } else {
             output_velocity = maximum_speed;
             outputAccel = 0;
         }
 
-        if (position_error <= (output_velocity * output_velocity) / (2 * max_accel)) {
-            output_velocity = current_velocity - direction_multiplier * max_accel * (current_time - previous_time);
-            output_accel = -max_accel;
-        }
 
-        telemetry.addData("output_velocity", output_velocity);
-        telemetry.addData("position_error", position_error);
+
+
+
 
         previous_time = current_time;
 
@@ -194,7 +187,7 @@ public class StarterBotTeleOp extends LinearOpMode {
 
             switch (hoodAngle){
                 case 0:
-                    targetRPM = 2250;
+                    targetRPM = 2500;
                     Hood.setPosition(.05);
                     break;
                 case 1:
@@ -239,7 +232,8 @@ public class StarterBotTeleOp extends LinearOpMode {
 
             if (shootingSingle) {
 
-                motor.setVelocity((targetRPM/60)*28);
+               // motor.setVelocity((output_velocity/60)*28);
+                motor.setVelocity(output_velocity);
 
                 if (phase == 1 && (ticksperrev < targetRPM + 25 && ticksperrev > targetRPM - 25)) {
                     timer.reset();
@@ -288,7 +282,8 @@ public class StarterBotTeleOp extends LinearOpMode {
             telemetry.addData("ticks/rev", ticksperrev);
             telemetry.addData("targetRPM", targetRPM);
             telemetry.addData("phase", phase);
-
+            telemetry.addData("output_velocity", output_velocity);
+            telemetry.addData("output_velocity", output_velocity);
 
 
 
