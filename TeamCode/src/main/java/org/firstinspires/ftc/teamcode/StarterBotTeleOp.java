@@ -99,6 +99,12 @@ public class StarterBotTeleOp extends LinearOpMode {
         }
 
 
+        if (current_velocity > maximum_speed)  { //&& !shootingSingle) {
+           output_velocity = -output_velocity;
+
+        }
+
+
 
 
 
@@ -235,7 +241,7 @@ public class StarterBotTeleOp extends LinearOpMode {
                // motor.setVelocity((output_velocity/60)*28);
                 motor.setVelocity(output_velocity);
 
-                if (phase == 1 && (ticksperrev < targetRPM + 25 && ticksperrev > targetRPM - 25)) {
+                if (phase == 1 && (ticksperrev < targetRPM + 15 && ticksperrev > targetRPM - 15)) {
                     timer.reset();
                     phase = 2;
 
@@ -248,7 +254,7 @@ public class StarterBotTeleOp extends LinearOpMode {
             } else {
                 phase = 1;
                 // resetTimer = false;
-                motor.setVelocity(0);
+                motor.setVelocity(output_velocity);
 
 
 
