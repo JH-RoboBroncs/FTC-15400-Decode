@@ -56,6 +56,8 @@ public class StarterBotTeleOp extends LinearOpMode {
     private double max_accel;
     private double previous_time;
 
+    private double currentRPM;
+
 
     double currentX;
     double currentY;
@@ -80,36 +82,30 @@ public class StarterBotTeleOp extends LinearOpMode {
 
         while (opModeIsActive()) {
 
-        current_velocity = motor.getVelocity();
+     /*   current_velocity = motor.getVelocity();
 
         current_time = timer.seconds();
 
         maximum_speed = targetRPM;
 
-        max_accel = 1250;
 
         direction_multiplier = 1;
 
         if (maximum_speed > Math.abs(current_velocity)) {
+            max_accel = 1250;
             output_velocity = current_velocity + direction_multiplier * max_accel; //* (current_time - previous_time);
             output_accel = max_accel;
-        } else {
-            output_velocity = maximum_speed;
+        } else if (output_velocity > maximum_speed){
+            output_velocity = output_velocity - (maximum_speed/60)*28;
+            max_accel = 0;
             outputAccel = 0;
+            // No go faster or we cut off your pp
         }
 
 
-        if (current_velocity > maximum_speed)  { //&& !shootingSingle) {
-           output_velocity = -output_velocity;
-
-        }
+        previous_time = current_time; */
 
 
-
-
-
-
-        previous_time = current_time;
 
 
 
@@ -238,13 +234,14 @@ public class StarterBotTeleOp extends LinearOpMode {
 
             if (shootingSingle) {
 
+                currentRPM = motion_profile(targetRPM/3, targetRPM, timer.seconds());
+
                // motor.setVelocity((output_velocity/60)*28);
-                motor.setVelocity(output_velocity);
+                motor.setVelocity((currentRPM/60)*28);
 
                 if (phase == 1 && (ticksperrev < targetRPM + 15 && ticksperrev > targetRPM - 15)) {
                     timer.reset();
                     phase = 2;
-
 
                 } else if (phase == 2 && timer.seconds() > .25) {
                     shootingSingle = false;
@@ -254,7 +251,7 @@ public class StarterBotTeleOp extends LinearOpMode {
             } else {
                 phase = 1;
                 // resetTimer = false;
-                motor.setVelocity(output_velocity);
+                motor.setVelocity(0);
 
 
 
@@ -312,5 +309,12 @@ public class StarterBotTeleOp extends LinearOpMode {
 
     }
 
+    double motion_profile(double maxAcceleration, double maxVelocity, double elapsed_time) {
+        double acceleration_dt = maxVelocity / maxAcceleration;
+
+        if (elapsed_time < acceleration_dt) return maxAcceleration * elapsed_time;
+
+        return maxVelocity;
+    }
 
 }
