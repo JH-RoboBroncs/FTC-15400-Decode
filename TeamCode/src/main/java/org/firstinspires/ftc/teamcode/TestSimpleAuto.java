@@ -167,9 +167,9 @@ public class TestSimpleAuto extends LinearOpMode {
                 if (timer.seconds() > 5.6 && timer.seconds() < 7.2){
                     hoodServo.setPosition(0.115);
                 } else if (timer.seconds() > 7.25 && timer.seconds() < 9) {
-                    hoodServo.setPosition(0.13);
+                    hoodServo.setPosition(0.125);
                 } else {
-                    hoodServo.setPosition(0.145);
+                    hoodServo.setPosition(0.115);
                 }
 
 
@@ -185,7 +185,7 @@ public class TestSimpleAuto extends LinearOpMode {
                     mphase = 1;
                 }
 
-                if ((timer.seconds() > 5.25 && timer.seconds() < 5.5) || (timer.seconds() > 7 && timer.seconds() < 7.25) || (timer.seconds() > 8.75 && timer.seconds() < 9.5)) {
+                if ((timer.seconds() > 5.25 && timer.seconds() < 5.5) || (timer.seconds() > 7 && timer.seconds() < 7.35) || (timer.seconds() > 8.75 && timer.seconds() < 9.5)) {
                     phase = 2; // load
                     servoing = true;
                 } else if (timer.seconds()< 4) {

@@ -10,23 +10,31 @@ import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
+import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.hardware.IMU;
+
+
 
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+
+import java.util.List;
 
 @Autonomous
 public class TestSimpleAutoRed extends LinearOpMode {
 
-    private Limelight3A limelight;
+    //private Limelight3A limelight;
 
     private ElapsedTime timer = new ElapsedTime();
 
@@ -48,19 +56,23 @@ public class TestSimpleAutoRed extends LinearOpMode {
         Pose2d initialPose = new Pose2d(60, 12, Math.toRadians(180));
         MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
         Pose2d localizerPose = drive.localizer.getPose();
-
+        double ticksPerRotation;
 
 
         private CRServo servoOne;
         private CRServo servoTwo;
-        private DcMotor shooter;
+        private Servo hoodServo;
+        private DcMotorEx shooter;
+
 
         public AprilTagss() {
             servoOne = hardwareMap.get(CRServo.class, "servoOne");
             servoTwo = hardwareMap.get(CRServo.class, "servoTwo");
+            hoodServo = hardwareMap.get(Servo.class, "hoodServo");
 
-            shooter = hardwareMap.get(DcMotor.class, "shooter");
+            shooter = hardwareMap.get(DcMotorEx.class, "shooter");
             shooter.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+            ticksPerRotation = shooter.getMotorType().getTicksPerRev();
         }
 
 
@@ -70,7 +82,7 @@ public class TestSimpleAutoRed extends LinearOpMode {
             // actions are formatted via telemetry packets as below
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-                LLResult result = limelight.getLatestResult();
+                //  LLResult result = limelight.getLatestResult();
 
                 final double TURN_GAIN = 0.05;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
                 final double MAX_AUTO_TURN = 0.2;
@@ -79,17 +91,17 @@ public class TestSimpleAutoRed extends LinearOpMode {
                     initialized = true;
                 }
 
-                    double robotYaw = drive.localizer.getPose().heading.toDouble();
-                    limelight.updateRobotOrientation(Math.toDegrees(-robotYaw));
+                double robotYaw = drive.localizer.getPose().heading.toDouble();
+                //  limelight.updateRobotOrientation(Math.toDegrees(-robotYaw));
 
 
 
-                    Pose2d mt2BotPos = new Pose2d(currentX *72, currentY*72, robotYaw);
-                    Pose2d pose = drive.localizer.getPose();
-                    telemetry.addData("heading (drive)", Math.toDegrees(pose.heading.toDouble()));
-                    packet.fieldOverlay().setStroke("#3F51B5");
-                    Drawing.drawRobot(packet.fieldOverlay(), mt2BotPos);
-                    FtcDashboard.getInstance().sendTelemetryPacket(packet);
+                Pose2d mt2BotPos = new Pose2d(currentX *72, currentY*72, robotYaw);
+                Pose2d pose = drive.localizer.getPose();
+                telemetry.addData("heading (drive)", Math.toDegrees(pose.heading.toDouble()));
+                packet.fieldOverlay().setStroke("#3F51B5");
+                Drawing.drawRobot(packet.fieldOverlay(), mt2BotPos);
+                FtcDashboard.getInstance().sendTelemetryPacket(packet);
 
 
                     /*if (result.isValid()) {
@@ -102,7 +114,7 @@ public class TestSimpleAutoRed extends LinearOpMode {
                                 telemetry.addData("Tag valid", fr.getFiducialId());
                             }
 
-                        } */if (result.isValid()) {
+                        } if (result.isValid()) {
                             Pose3D botpose_mt2 = result.getBotpose_MT2();
 
                                 if (botpose_mt2 != null) {
@@ -118,22 +130,29 @@ public class TestSimpleAutoRed extends LinearOpMode {
                         } else {
                             telemetry.addLine("No Tag");
 
-                        }
+                        }*/
 
-                    drive.updatePoseEstimate();
-                    telemetry.update();
-                    return opModeIsActive();//true;
+                drive.updatePoseEstimate();
+                telemetry.update();
+                return opModeIsActive();//true;
             }
         }
 
-        public class shoot implements Action {  // not working rn
+
+
+        public class rangedShoot implements Action {  // not working rn
             private boolean initialized = false;
 
             private int phase = 0;
+            private int mphase = 0;
+            private boolean servoing;
+
 
             // actions are formatted via telemetry packets as below
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
+
+
 
                 //powers on motor, if it is not on
                 if (!initialized) {
@@ -142,23 +161,41 @@ public class TestSimpleAutoRed extends LinearOpMode {
                     shooter.setPower(0);
                     servoTwo.setPower(0);
                     servoOne.setPower(0);
+                    hoodServo.setPosition(.125);
                 }
 
-                if (timer.seconds() > 6.25 && timer.seconds() < 10) {
-                    shooter.setPower(0.45); //0.45
-                } else if (timer.seconds() > 5 && timer.seconds() < 10) {
-                    shooter.setPower(.4);
+                if (timer.seconds() > 5.6 && timer.seconds() < 7.2){
+                    hoodServo.setPosition(0.125);
+                } else if (timer.seconds() > 7.25 && timer.seconds() < 9) {
+                    hoodServo.setPosition(0.13);
                 } else {
-                    shooter.setPower(0);
+                    hoodServo.setPosition(0.125);
                 }
 
-                if (/*(timer.seconds() > 5.75 && timer.seconds() < 6) ||*/ (timer.seconds() > 7 && timer.seconds() < 7.25) || (timer.seconds() > 8.25 && timer.seconds() < 8.5)) {
+
+
+                //timer.reset();
+                if (timer.seconds() > 7.2 && timer.seconds() < 9.65) { //3rd ball
+                    mphase = 2;
+                } else if (timer.seconds() > 5.6 && timer.seconds() < 7.15) { //2nd
+                    mphase = 4;
+                } else if (timer.seconds() > 4 && timer.seconds() < 5.6) { //1st
+                    mphase = 3;
+                } else {
+                    mphase = 1;
+                }
+
+                if ((timer.seconds() > 5.25 && timer.seconds() < 5.5) || (timer.seconds() > 7 && timer.seconds() < 7.35) || (timer.seconds() > 8.75 && timer.seconds() < 9.5)) {
                     phase = 2; // load
-                } else if ((timer.seconds() > 5.75 && timer.seconds() < 6)) {
-                    phase = 3;
+                    servoing = true;
+                } else if (timer.seconds()< 4) {
+                    phase = 4;
                 } else {
                     phase = 1; // idle
+                    servoing = false;
                 }
+
+
 
 
                 switch (phase){
@@ -167,27 +204,49 @@ public class TestSimpleAutoRed extends LinearOpMode {
                         servoOne.setPower(0);
                         break;
                     case 2: //loading
-                        servoTwo.setPower(0.65);
-                        servoOne.setPower(-0.65);
+                        servoTwo.setPower(.2); //.65
+                        servoOne.setPower(-0.2);
                         break;
                     case 3: //loading
-                        servoTwo.setPower(0.75);
-                        servoOne.setPower(-0.75);
+                        servoTwo.setPower(.5);
+                        servoOne.setPower(-.5);
+                        break;
+                    case 4:
+                        servoOne.setPower(.85);
+                        servoTwo.setPower(-.85);
                         break;
                     default:
                         servoTwo.setPower(0);
                         servoOne.setPower(0);
                 }
 
+                switch (mphase){
+                    case 1: // waiting
+                        shooter.setVelocity(0);
+                        break;
+                    case 2: //3rd ball
+                        shooter.setVelocity(ticksPerRotation/(1.1766/.65)); //625
+                        break;
+                    case 3: //1st
+                        shooter.setVelocity(ticksPerRotation/(1.1766/.55)); //525
+                        break;
+                    case 4: //2nd
+                        shooter.setVelocity(ticksPerRotation/(1.1766/.65)); //625
+                        break;
+                    default:
+                        //motor.setPower(0);
+                }
+
+
                 packet.fieldOverlay().setStroke("#3F51B5");
                 Drawing.drawRobot(packet.fieldOverlay(), localizerPose);
                 FtcDashboard.getInstance().sendTelemetryPacket(packet);
 
-                telemetry.addData("shooter power", shooter.getPower());
-                telemetry.addData("loader1 power", servoOne.getPower());
-                telemetry.addData("loader2 power", servoTwo.getPower());
+                telemetry.addData("loading", servoing);
+                telemetry.addData("time", timer.seconds());
 
                 telemetry.update();
+                drive.updatePoseEstimate();
 
                 return opModeIsActive(); //true;
             }
@@ -195,13 +254,16 @@ public class TestSimpleAutoRed extends LinearOpMode {
         }
 
 
+
+
+
         //turns these into actions to be used in actions.runblocking (question mark?)
         public Action faceTag() {
             return new TestSimpleAutoRed.AprilTagss.faceTag();
         }
 
-        public Action shoot() {
-            return new TestSimpleAutoRed.AprilTagss.shoot();
+        public Action rangedShoot() {
+            return new TestSimpleAutoRed.AprilTagss.rangedShoot();
         }
 
     }
@@ -214,7 +276,7 @@ public class TestSimpleAutoRed extends LinearOpMode {
 
         boolean targetFound = false;    // Set to true when an AprilTag target is detected
         double turn = 0;        // Desired turning power/speed (-1 to +1)
-        limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        // limelight = hardwareMap.get(Limelight3A.class, "limelight");
 
         frontLeftDrive = hardwareMap.get(DcMotor.class, "leftFront");
         frontRightDrive = hardwareMap.get(DcMotor.class, "rightFront");
@@ -223,20 +285,23 @@ public class TestSimpleAutoRed extends LinearOpMode {
 
         AprilTagss aprilTags = new AprilTagss();
 
-        limelight.pipelineSwitch(0);
+        //  limelight.pipelineSwitch(0);
         //limelight.setPollRateHz(150);
-        limelight.start();
+        // limelight.start();
 
 
         TrajectoryActionBuilder poo = aprilTags.drive.actionBuilder(aprilTags.initialPose)
                 .waitSeconds(1)
                 .setTangent(180)
-                .splineToLinearHeading(new Pose2d(-55, 55 , Math.toRadians(130)), Math.PI / 2);
+                //.splineToConstantHeading(new Vector2d(-50, -43), (3 * Math.PI / 2));
+                .splineToLinearHeading(new Pose2d(-24, 24 , Math.toRadians(140)), (3* (Math.PI / 2))); // -55,-55
 
 
         Action trajectoryActionCloseOut = poo.endTrajectory().fresh()
                 .waitSeconds(9.5)
-                .splineToLinearHeading(new Pose2d(60,-45,Math.toRadians(90)), (3*Math.PI / 2))
+                .setTangent(0)
+                .splineToLinearHeading(new Pose2d(36, 12 , Math.toRadians(180)), (Math.PI / 2)) // -55,-55
+                // .splineToConstantHeading(new Vector2d(36, -12), (3*Math.PI / 2))
                 .build();
 
 
@@ -267,20 +332,12 @@ public class TestSimpleAutoRed extends LinearOpMode {
 
 
         Actions.runBlocking(
-               /* new ParallelAction(
-                        aprilTags.faceTag(),
-                        aprilTags.shoot(),
-                new SequentialAction(
-                        poo.build(),
-                        trajectoryActionCloseOut
-                ))*/
-
                 new ParallelAction(
-                        aprilTags.shoot(),
-                new SequentialAction(
-                        poo.build(),
-                        trajectoryActionCloseOut
-                ))
+                        aprilTags.rangedShoot(),
+                        new SequentialAction(
+                                poo.build(),
+                                trajectoryActionCloseOut
+                        ))
         );
 
 
@@ -314,3 +371,4 @@ public class TestSimpleAutoRed extends LinearOpMode {
 
 
 }
+//miles was here

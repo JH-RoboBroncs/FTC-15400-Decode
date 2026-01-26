@@ -25,6 +25,8 @@ public class StarterBotTeleOp extends LinearOpMode {
 
     private ElapsedTime timer = new ElapsedTime();
 
+    private ElapsedTime profileTimer = new ElapsedTime();
+
 
     private Limelight3A limelight;
 
@@ -170,6 +172,7 @@ public class StarterBotTeleOp extends LinearOpMode {
             }
 
             if (gamepad2.b && !shootingSingle) {
+                profileTimer.reset();
                 shootingSingle = true;
                 timer.reset();
             }
@@ -193,19 +196,17 @@ public class StarterBotTeleOp extends LinearOpMode {
                     Hood.setPosition(.05);
                     break;
                 case 1:
-                    targetRPM = 2600;
-                    Hood.setPosition(.115);
+                    targetRPM = 2800;
+                    Hood.setPosition(.110);
                     break;
                 case 2:
-                    targetRPM = 3000;
-                    Hood.setPosition(.125);
+                    targetRPM = 3250;
+                    Hood.setPosition(.120);
                     break;
-                /*case 3:
-                    Hood.setPosition(.13);
-                    break;*/
+
                 case 3: //4
                     targetRPM = 4250;
-                    Hood.setPosition(.145);
+                    Hood.setPosition(.135);
                     break;
 
                 //default:
@@ -234,9 +235,8 @@ public class StarterBotTeleOp extends LinearOpMode {
 
             if (shootingSingle) {
 
-                currentRPM = motion_profile(targetRPM/3, targetRPM, timer.seconds());
+                currentRPM = motion_profile(targetRPM/3, targetRPM, profileTimer.seconds());
 
-               // motor.setVelocity((output_velocity/60)*28);
                 motor.setVelocity((currentRPM/60)*28);
 
                 if (phase == 1 && (ticksperrev < targetRPM + 15 && ticksperrev > targetRPM - 15)) {
