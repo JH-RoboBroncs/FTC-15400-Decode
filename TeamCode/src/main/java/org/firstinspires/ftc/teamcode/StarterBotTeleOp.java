@@ -1,12 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
-import com.qualcomm.hardware.limelightvision.LLResult;
-import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -14,50 +11,32 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import java.util.Timer;
-import java.util.TimerTask;
 
-import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.mechanisms.StarterBotShoot;
 
 @TeleOp
 public class StarterBotTeleOp extends LinearOpMode {
 
     private ElapsedTime timer = new ElapsedTime();
-
     private ElapsedTime profileTimer = new ElapsedTime();
-
-
-    private Limelight3A limelight;
 
     StarterBotShoot shooter = new StarterBotShoot();
     private DcMotorEx motor;
     private CRServo servoOne;
     private CRServo servoTwo;
     private Servo Hood;
-    boolean shooting = false;
+    private Servo hood2;
     boolean shootingSingle = false;
     boolean sensToggle = true;
-    boolean resetTimer = false;
-    private double count = 0;
+
 
     private int hoodAngle = 0;
     private double ticksperrev;
     private double targetRPM = 1000;
     private int phase = 0;
 
-    private double current_velocity;
-    private double current_time;
-    private double direction_multiplier;
 
-    private double position_error;
-    private double maximum_speed;
     private double output_velocity;
-    private double output_accel;
-    private double outputAccel;
-    private double max_accel;
-    private double previous_time;
-
     private double currentRPM;
 
 
@@ -70,6 +49,7 @@ public class StarterBotTeleOp extends LinearOpMode {
         // limelight.start();
         motor = hardwareMap.get(DcMotorEx.class, "shooter");
         Hood = hardwareMap.get(Servo.class, "hoodServo");
+        hood2 = hardwareMap.get(Servo.class, "hoodServo2");
         servoOne = hardwareMap.get(CRServo.class, "servoOne");
         servoTwo = hardwareMap.get(CRServo.class, "servoTwo");
 
@@ -84,33 +64,6 @@ public class StarterBotTeleOp extends LinearOpMode {
 
         while (opModeIsActive()) {
 
-     /*   current_velocity = motor.getVelocity();
-
-        current_time = timer.seconds();
-
-        maximum_speed = targetRPM;
-
-
-        direction_multiplier = 1;
-
-        if (maximum_speed > Math.abs(current_velocity)) {
-            max_accel = 1250;
-            output_velocity = current_velocity + direction_multiplier * max_accel; //* (current_time - previous_time);
-            output_accel = max_accel;
-        } else if (output_velocity > maximum_speed){
-            output_velocity = output_velocity - (maximum_speed/60)*28;
-            max_accel = 0;
-            outputAccel = 0;
-            // No go faster or we cut off your pp
-        }
-
-
-        previous_time = current_time; */
-
-
-
-
-
 
 
             if (sensToggle) {
@@ -119,7 +72,7 @@ public class StarterBotTeleOp extends LinearOpMode {
                                 -gamepad1.left_stick_y * 0.85,
                                 -gamepad1.left_stick_x * 0.85
                         ),
-                        -gamepad1.right_stick_x * 1.5
+                        -gamepad1.right_stick_x * 1.25
                 ));
             } else {
                 drive.setDrivePowers(new PoseVelocity2d(
@@ -130,18 +83,6 @@ public class StarterBotTeleOp extends LinearOpMode {
                         -gamepad1.right_stick_x * .25
                 ));
             }
-           /* if (gamepad2.a){
-                shooter.shoot(.45);
-            } else {
-                shooter.shoot(0);
-            }*/
-
-            /*if (gamepad2.dpad_left) {
-                shooter.load(.55);
-                } else {
-                shooter.load(0);
-            }*/
-
 
 
             if(gamepad2.dpadUpWasReleased()) {
@@ -153,31 +94,11 @@ public class StarterBotTeleOp extends LinearOpMode {
 
             ticksperrev = motor.getVelocity()/28 * 60; //ticks per second -> rpm
 
-         /*   if (gamepad2.y) {
-                motor.setVelocity((targetRPM/60)*28);  //target RPM/60(seconds)*28 (ticks/revolution)
-                if (ticksperrev < targetRPM + 200 && ticksperrev > targetRPM - 200) {
-                    shooter.load(.55);
-                } else {
-                    shooter.load(0);
-                }
-            } else {
-                motor.setVelocity(0);
-            } */
-
-
-
-            if (gamepad2.x && !shooting) {
-                shooting = true;
-                timer.reset();
-            }
-
             if (gamepad2.b && !shootingSingle) {
                 profileTimer.reset();
                 shootingSingle = true;
                 timer.reset();
             }
-
-
 
 
             if(gamepad2.rightBumperWasReleased()) {
@@ -193,24 +114,24 @@ public class StarterBotTeleOp extends LinearOpMode {
             switch (hoodAngle){
                 case 0:
                     targetRPM = 2500;
+                    hood2.setPosition(.05);
                     Hood.setPosition(.05);
                     break;
                 case 1:
                     targetRPM = 2800;
+                    hood2.setPosition(.110);
                     Hood.setPosition(.110);
                     break;
                 case 2:
                     targetRPM = 3250;
+                    hood2.setPosition(.12);
                     Hood.setPosition(.120);
                     break;
-
-                case 3: //4
+                case 3:
                     targetRPM = 4250;
+                    hood2.setPosition(.135);
                     Hood.setPosition(.135);
                     break;
-
-                //default:
-                // Hood.setPosition(0);
             }
 
             switch (phase){
@@ -226,11 +147,6 @@ public class StarterBotTeleOp extends LinearOpMode {
                     servoTwo.setPower(0);
                     servoOne.setPower(0);
             }
-
-
-
-
-
 
 
             if (shootingSingle) {
@@ -252,29 +168,7 @@ public class StarterBotTeleOp extends LinearOpMode {
                 phase = 1;
                 // resetTimer = false;
                 motor.setVelocity(0);
-
-
-
-
-
-            /*else if (shooting) {
-                shooter.shoot2(timer);
-
-                // Stop after full cycle (adjust time as needed)
-                if (timer.seconds() > 5) {   // <-- duration of full cycle
-                    shooting = false;
-
-                }*/
             }
-
-
-          /*  if (gamepad1.yWasReleased() && sensToggle) {
-                sensToggle = false;
-            } else if (gamepad1.yWasReleased() && !sensToggle) {
-                sensToggle = true;
-            } */
-
-
 
 
 
@@ -287,20 +181,6 @@ public class StarterBotTeleOp extends LinearOpMode {
             telemetry.addData("phase", phase);
             telemetry.addData("output_velocity", output_velocity);
             telemetry.addData("output_velocity", output_velocity);
-
-
-
-                    /*if (result.isValid()) {
-                        List<LLResultTypes.FiducialResult> fiducialResults = result.getFiducialResults();
-                        for (LLResultTypes.FiducialResult fr : fiducialResults) {
-                            if (fr.getFiducialId() == 20 && Math.abs(result.getTx()) > 0.25) {
-                                double headingError = result.getTx(); //desiredTag.ftcPose.bearing;
-                                turn = -Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN);
-                                moveRobot(0, 0, turn);
-                                telemetry.addData("Tag valid", fr.getFiducialId());
-                            }
-
-                        } */
 
             drive.updatePoseEstimate();
             telemetry.update();
