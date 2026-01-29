@@ -42,6 +42,7 @@ public class StarterBotTeleOp extends LinearOpMode {
 
     double currentX;
     double currentY;
+    double ServoAngle2 = 1;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -61,10 +62,7 @@ public class StarterBotTeleOp extends LinearOpMode {
         waitForStart();
 
 
-
         while (opModeIsActive()) {
-
-
 
             if (sensToggle) {
                 drive.setDrivePowers(new PoseVelocity2d(
@@ -85,109 +83,113 @@ public class StarterBotTeleOp extends LinearOpMode {
             }
 
 
-            if(gamepad2.dpadUpWasReleased()) {
+            ticksperrev = motor.getVelocity() / 28 * 60;
+
+
+            if (gamepad2.dpadUpWasReleased()) {
                 targetRPM = targetRPM + 250;
-            } else if(gamepad2.dpadDownWasReleased()) {
+            } else if (gamepad2.dpadDownWasReleased()) {
                 targetRPM = targetRPM - 250;
             }
-
-
-            ticksperrev = motor.getVelocity()/28 * 60; //ticks per second -> rpm
 
             if (gamepad2.b && !shootingSingle) {
                 profileTimer.reset();
                 shootingSingle = true;
                 timer.reset();
             }
-
-
-            if(gamepad2.rightBumperWasReleased()) {
-                hoodAngle = hoodAngle + 1;
-            } else if (hoodAngle > 3) {
-                hoodAngle = 0;
-            } else if(gamepad2.leftBumperWasReleased()) {
-                hoodAngle = hoodAngle - 1;
-            } else if (hoodAngle < 0) {
-                hoodAngle = 3;
+            if (gamepad2.dpadRightWasReleased()) {
+                ServoAngle2 = ServoAngle2 + .05;
             }
-
-            switch (hoodAngle){
-                case 0:
-                    targetRPM = 2500;
-                    hood2.setPosition(.05);
-                    Hood.setPosition(.05);
-                    break;
-                case 1:
-                    targetRPM = 2800;
-                    hood2.setPosition(.110);
-                    Hood.setPosition(.110);
-                    break;
-                case 2:
-                    targetRPM = 3250;
-                    hood2.setPosition(.12);
-                    Hood.setPosition(.120);
-                    break;
-                case 3:
-                    targetRPM = 4250;
-                    hood2.setPosition(.135);
-                    Hood.setPosition(.135);
-                    break;
-            }
-
-            switch (phase){
-                case 1: // waiting
-                    servoTwo.setPower(0);
-                    servoOne.setPower(0);
-                    break;
-                case 2:
-                    servoOne.setPower(-.25);
-                    servoTwo.setPower(.25);
-                    break;
-                default:
-                    servoTwo.setPower(0);
-                    servoOne.setPower(0);
+            if (gamepad2.dpadLeftWasReleased()) {
+                ServoAngle2 = ServoAngle2 - .05;
             }
 
 
-            if (shootingSingle) {
-
-                currentRPM = motion_profile(targetRPM/3, targetRPM, profileTimer.seconds());
-
-                motor.setVelocity((currentRPM/60)*28);
-
-                if (phase == 1 && (ticksperrev < targetRPM + 15 && ticksperrev > targetRPM - 15)) {
-                    timer.reset();
-                    phase = 2;
-
-                } else if (phase == 2 && timer.seconds() > .25) {
-                    shootingSingle = false;
-                }
-
-
-            } else {
-                phase = 1;
-                // resetTimer = false;
-                motor.setVelocity(0);
-            }
-
-
-
-            telemetry.addData("anglecase", hoodAngle);
-            //   telemetry.addData("sensitivity", sensToggle);
-            telemetry.addData("time", timer);
-            telemetry.addData("shootingsingle", shootingSingle);
-            telemetry.addData("ticks/rev", ticksperrev);
-            telemetry.addData("targetRPM", targetRPM);
-            telemetry.addData("phase", phase);
-            telemetry.addData("output_velocity", output_velocity);
-            telemetry.addData("output_velocity", output_velocity);
-
-            drive.updatePoseEstimate();
-            telemetry.update();
-
+        if (gamepad2.rightBumperWasReleased()) {
+            hoodAngle = hoodAngle + 1;
+        } else if (hoodAngle > 3) {
+            hoodAngle = 0;
+        } else if (gamepad2.leftBumperWasReleased()) {
+            hoodAngle = hoodAngle - 1;
+        } else if (hoodAngle < 0) {
+            hoodAngle = 3;
         }
 
+        switch (hoodAngle) { // start from .75, go down from there
+            case 0:
+                targetRPM = 2500;
+                hood2.setPosition(.70);
+
+                Hood.setPosition(0);
+                break;
+            case 1:
+                targetRPM = 2800;
+                hood2.setPosition(.57);
+                Hood.setPosition(.110);
+                break;
+            case 2:
+                targetRPM = 3250;
+                hood2.setPosition(.58);
+                Hood.setPosition(.120);
+                break;
+            case 3:
+                targetRPM = 4250;
+                hood2.setPosition(ServoAngle2);
+                Hood.setPosition(.135);
+                break;
+        }
+
+        switch (phase) {
+            case 1:
+                servoTwo.setPower(0);
+                servoOne.setPower(0);
+                break;
+            case 2:
+                servoOne.setPower(-.25);
+                servoTwo.setPower(.25);
+                break;
+            default:
+                servoTwo.setPower(0);
+                servoOne.setPower(0);
+        }
+
+
+        if (shootingSingle) {
+
+            currentRPM = motion_profile(targetRPM / 3, targetRPM, profileTimer.seconds());
+
+            motor.setVelocity((currentRPM / 60) * 28);
+
+            if (phase == 1 && (ticksperrev < targetRPM + 15 && ticksperrev > targetRPM - 15)) {
+                timer.reset();
+                phase = 2;
+
+            } else if (phase == 2 && timer.seconds() > .25) {
+                shootingSingle = false;
+            }
+
+
+        } else {
+            phase = 1;
+            motor.setVelocity(0);
+        }
+
+
+        telemetry.addData("time", timer);
+        telemetry.addData("ticks/rev", ticksperrev);
+        telemetry.addData("targetRPM", targetRPM);
+        telemetry.addData("hood angle phase", hoodAngle);
+        telemetry.addData("output_velocity", output_velocity);
+        telemetry.addData("hood2pos", hood2.getPosition());
+            telemetry.addData("pos var", ServoAngle2);
+
+        drive.updatePoseEstimate();
+        telemetry.update();
+
     }
+}
+
+
 
     double motion_profile(double maxAcceleration, double maxVelocity, double elapsed_time) {
         double acceleration_dt = maxVelocity / maxAcceleration;
