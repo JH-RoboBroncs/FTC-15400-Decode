@@ -97,12 +97,12 @@ public class StarterBotTeleOp extends LinearOpMode {
                 shootingSingle = true;
                 timer.reset();
             }
-            if (gamepad2.dpadRightWasReleased()) {
-                ServoAngle2 = ServoAngle2 + .05;
+           /* if (gamepad2.dpadRightWasReleased()) {
+                ServoAngle2 = ServoAngle2 + .005;
             }
             if (gamepad2.dpadLeftWasReleased()) {
-                ServoAngle2 = ServoAngle2 - .05;
-            }
+                ServoAngle2 = ServoAngle2 - .005;
+            }*/
 
 
         if (gamepad2.rightBumperWasReleased()) {
@@ -118,23 +118,23 @@ public class StarterBotTeleOp extends LinearOpMode {
         switch (hoodAngle) { // start from .75, go down from there
             case 0:
                 targetRPM = 2500;
-                hood2.setPosition(.70);
+                hood2.setPosition(.68);//.68
 
                 Hood.setPosition(0);
                 break;
             case 1:
                 targetRPM = 2800;
-                hood2.setPosition(.57);
+                hood2.setPosition(.58); //.58
                 Hood.setPosition(.110);
                 break;
             case 2:
                 targetRPM = 3250;
-                hood2.setPosition(.58);
+                hood2.setPosition(.575); //.575
                 Hood.setPosition(.120);
                 break;
             case 3:
                 targetRPM = 4250;
-                hood2.setPosition(ServoAngle2);
+                hood2.setPosition(.55); //.565
                 Hood.setPosition(.135);
                 break;
         }
