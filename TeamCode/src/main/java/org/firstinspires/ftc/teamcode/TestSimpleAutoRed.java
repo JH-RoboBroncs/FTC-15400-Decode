@@ -294,7 +294,7 @@ public class TestSimpleAutoRed extends LinearOpMode {
                 .waitSeconds(1)
                 .setTangent(180)
                 //.splineToConstantHeading(new Vector2d(-50, -43), (3 * Math.PI / 2));
-                .lineToX(0)
+                .lineToYLinearHeading(0,Math.toRadians(180))
                 .waitSeconds(.5)
                 .splineToLinearHeading(new Pose2d(-24, 24 , Math.toRadians(140)), ( Math.PI / 2)); // -55,-55
 
