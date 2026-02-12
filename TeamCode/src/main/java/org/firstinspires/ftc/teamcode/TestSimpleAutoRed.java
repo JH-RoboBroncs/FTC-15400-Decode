@@ -185,11 +185,9 @@ public class TestSimpleAutoRed extends LinearOpMode {
                     mphase = 1;
                 }
 
-                if ((timer.seconds() > 5.25 && timer.seconds() < 5.5) || (timer.seconds() > 7 && timer.seconds() < 7.35) || (timer.seconds() > 8.75 && timer.seconds() < 9.5)) {
+                if ((timer.seconds() > 5.25 && timer.seconds() < 5.6) || (timer.seconds() > 7 && timer.seconds() < 7.35) || (timer.seconds() > 8.75 && timer.seconds() < 9.5)) {
                     phase = 2; // load
                     servoing = true;
-                } else if (timer.seconds()< 4) {
-                    phase = 4;
                 } else {
                     phase = 1; // idle
                     servoing = false;
@@ -292,15 +290,14 @@ public class TestSimpleAutoRed extends LinearOpMode {
 
         TrajectoryActionBuilder poo = aprilTags.drive.actionBuilder(aprilTags.initialPose)
                 .waitSeconds(1)
-                .setTangent(180)
                 //.splineToConstantHeading(new Vector2d(-50, -43), (3 * Math.PI / 2));
-                .lineToYLinearHeading(0,Math.toRadians(180))
-                .waitSeconds(.5)
+                .strafeTo(new Vector2d(0,12))
+             //   .waitSeconds(.5)
                 .splineToLinearHeading(new Pose2d(-24, 24 , Math.toRadians(140)), ( Math.PI / 2)); // -55,-55
 
 
         Action trajectoryActionCloseOut = poo.endTrajectory().fresh()
-                .waitSeconds(9.5)
+                .waitSeconds(11.5)
                 .setTangent(0)
                 .splineToLinearHeading(new Pose2d(36, 12 , Math.toRadians(180)), (Math.PI / 2)) // -55,-55
                 // .splineToConstantHeading(new Vector2d(36, -12), (3*Math.PI / 2))

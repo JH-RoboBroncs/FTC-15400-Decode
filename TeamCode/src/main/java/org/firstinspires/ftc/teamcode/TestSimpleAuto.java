@@ -293,6 +293,7 @@ public class TestSimpleAuto extends LinearOpMode {
         TrajectoryActionBuilder poo = aprilTags.drive.actionBuilder(aprilTags.initialPose)
                 .waitSeconds(1)
                 .setTangent(180)
+                .strafeTo(new Vector2d(0,-12))
                 //.splineToConstantHeading(new Vector2d(-50, -43), (3 * Math.PI / 2));
                .splineToLinearHeading(new Pose2d(-24, -24 , Math.toRadians(230)), (Math.PI / 2)); // -55,-55
 

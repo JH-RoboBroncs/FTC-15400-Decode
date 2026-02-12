@@ -175,13 +175,9 @@ public class StarterBotTeleOp extends LinearOpMode {
         }
 
 
-        telemetry.addData("time", timer);
-        telemetry.addData("ticks/rev", ticksperrev);
-        telemetry.addData("targetRPM", targetRPM);
         telemetry.addData("hood angle phase", hoodAngle);
-        telemetry.addData("output_velocity", output_velocity);
-        telemetry.addData("hood2pos", hood2.getPosition());
-            telemetry.addData("pos var", ServoAngle2);
+
+
 
         drive.updatePoseEstimate();
         telemetry.update();
