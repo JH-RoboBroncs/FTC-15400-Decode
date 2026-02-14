@@ -128,7 +128,7 @@ public class StarterBotTeleOp extends LinearOpMode {
                 Hood.setPosition(.110);
                 break;
             case 2:
-                targetRPM = 3250;
+                targetRPM = 3100;
                 hood2.setPosition(.575); //.575
                 Hood.setPosition(.120);
                 break;
@@ -152,6 +152,9 @@ public class StarterBotTeleOp extends LinearOpMode {
                 servoTwo.setPower(0);
                 servoOne.setPower(0);
         }
+
+
+
 
 
         if (shootingSingle) {
@@ -184,6 +187,8 @@ public class StarterBotTeleOp extends LinearOpMode {
 
     }
 }
+
+
 
 
 

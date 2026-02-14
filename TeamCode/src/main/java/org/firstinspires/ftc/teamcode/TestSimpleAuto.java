@@ -62,6 +62,7 @@ public class TestSimpleAuto extends LinearOpMode {
         private CRServo servoOne;
         private CRServo servoTwo;
         private Servo hoodServo;
+        private Servo hoodServo2;
         private DcMotorEx shooter;
 
 
@@ -69,6 +70,7 @@ public class TestSimpleAuto extends LinearOpMode {
             servoOne = hardwareMap.get(CRServo.class, "servoOne");
             servoTwo = hardwareMap.get(CRServo.class, "servoTwo");
             hoodServo = hardwareMap.get(Servo.class, "hoodServo");
+            hoodServo2 = hardwareMap.get(Servo.class, "hoodServo2");
 
             shooter = hardwareMap.get(DcMotorEx.class, "shooter");
             shooter.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
@@ -145,14 +147,18 @@ public class TestSimpleAuto extends LinearOpMode {
 
             private int phase = 0;
             private int mphase = 0;
+            private int tarPM = 0;
             private boolean servoing;
-
+            private double currentRPM;
+            private double targetRPM;
+            private double ticksperrev;
+            private double blabhblag;
+            private ElapsedTime profileTimer = new ElapsedTime();
+            private ElapsedTime timer2 = new ElapsedTime();
 
             // actions are formatted via telemetry packets as below
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-
-
 
                 //powers on motor, if it is not on
                 if (!initialized) {
@@ -161,88 +167,66 @@ public class TestSimpleAuto extends LinearOpMode {
                     shooter.setPower(0);
                     servoTwo.setPower(0);
                     servoOne.setPower(0);
-                    hoodServo.setPosition(.125);
+                    hoodServo.setPosition(.11);
+                    hoodServo2.setPosition(.58);
+                    profileTimer.reset();
+                    currentRPM = 0;
+                    phase = 1;
+                    blabhblag = 0;
                 }
+                ticksperrev = shooter.getVelocity() / 28 * 60;
 
-                if (timer.seconds() > 5.6 && timer.seconds() < 7.2){
-                    hoodServo.setPosition(0.115);
-                } else if (timer.seconds() > 7.25 && timer.seconds() < 9) {
-                    hoodServo.setPosition(0.125);
-                } else {
-                    hoodServo.setPosition(0.115);
-                }
-
-
-
+                currentRPM = motion_profile(targetRPM / 3, targetRPM, profileTimer.seconds());
+                shooter.setVelocity((currentRPM / 60) * 28);
                 //timer.reset();
-                if (timer.seconds() > 7.2 && timer.seconds() < 9.65) { //3rd ball
-                    mphase = 2;
-                } else if (timer.seconds() > 5.6 && timer.seconds() < 7.15) { //2nd
-                    mphase = 4;
-                } else if (timer.seconds() > 4 && timer.seconds() < 5.6) { //1st
-                    mphase = 3;
+                if (timer.seconds() >4 && timer.seconds() <10) {
+                    tarPM = 1;
                 } else {
-                    mphase = 1;
+                    tarPM = 0;
                 }
-
-                if ((timer.seconds() > 5.25 && timer.seconds() < 5.5) || (timer.seconds() > 7 && timer.seconds() < 7.35) || (timer.seconds() > 8.75 && timer.seconds() < 9.5)) {
-                    phase = 2; // load
-                    servoing = true;
-                } else if (timer.seconds()< 4) {
-                    phase = 4;
-                } else {
-                    phase = 1; // idle
-                    servoing = false;
+// WORK YOU FAT FUCKING CHUD
+                if (phase == 1 && (ticksperrev < targetRPM + 15 && ticksperrev > targetRPM - 15) && blabhblag < 2) {
+                    timer2.reset();
+                    phase = 2;
+                    blabhblag = blabhblag +1;
+                } else if (phase == 2 && timer2.seconds() > .25) {
+                    phase = 1;
                 }
 
 
 
 
-                switch (phase){
-                    case 1: // waiting
+                switch (tarPM) {
+                    case 0:
+                        targetRPM = 0;
+                        break;
+                    case 1:
+                        targetRPM = 2800;
+                        break;
+                }
+
+                switch (phase) {
+                    case 1:
                         servoTwo.setPower(0);
                         servoOne.setPower(0);
                         break;
-                    case 2: //loading
-                        servoTwo.setPower(.2); //.65
-                        servoOne.setPower(-0.2);
-                        break;
-                    case 3: //loading
-                        servoTwo.setPower(.5);
-                        servoOne.setPower(-.5);
-                        break;
-                    case 4:
-                        servoOne.setPower(.85);
-                        servoTwo.setPower(-.85);
+                    case 2:
+                        servoOne.setPower(-.25);
+                        servoTwo.setPower(.25);
                         break;
                     default:
                         servoTwo.setPower(0);
                         servoOne.setPower(0);
                 }
 
-                switch (mphase){
-                    case 1: // waiting
-                        shooter.setVelocity(0);
-                        break;
-                    case 2: //3rd ball
-                        shooter.setVelocity(ticksPerRotation/(1.1766/.65)); //625
-                        break;
-                    case 3: //1st
-                        shooter.setVelocity(ticksPerRotation/(1.1766/.55)); //525
-                        break;
-                    case 4: //2nd
-                        shooter.setVelocity(ticksPerRotation/(1.1766/.65)); //625
-                        break;
-                    default:
-                        //motor.setPower(0);
-                }
 
 
                 packet.fieldOverlay().setStroke("#3F51B5");
                 Drawing.drawRobot(packet.fieldOverlay(), localizerPose);
                 FtcDashboard.getInstance().sendTelemetryPacket(packet);
 
-                telemetry.addData("loading", servoing);
+                telemetry.addData("profileTimer", profileTimer.seconds());
+                telemetry.addData("time2", timer2.seconds());
                 telemetry.addData("time", timer.seconds());
 
                 telemetry.update();
@@ -254,6 +238,13 @@ public class TestSimpleAuto extends LinearOpMode {
         }
 
 
+        double motion_profile(double maxAcceleration, double maxVelocity, double elapsed_time) {
+            double acceleration_dt = maxVelocity / maxAcceleration;
+
+            if (elapsed_time < acceleration_dt) return maxAcceleration * elapsed_time;
+
+            return maxVelocity;
+        }
 
 
 
