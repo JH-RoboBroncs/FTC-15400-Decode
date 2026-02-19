@@ -62,6 +62,7 @@ public class TestSimpleAutoRed extends LinearOpMode {
         private CRServo servoOne;
         private CRServo servoTwo;
         private Servo hoodServo;
+        private Servo hoodServo2;
         private DcMotorEx shooter;
 
 
@@ -69,7 +70,7 @@ public class TestSimpleAutoRed extends LinearOpMode {
             servoOne = hardwareMap.get(CRServo.class, "servoOne");
             servoTwo = hardwareMap.get(CRServo.class, "servoTwo");
             hoodServo = hardwareMap.get(Servo.class, "hoodServo");
-
+            hoodServo2 = hardwareMap.get(Servo.class, "hoodServo2");
             shooter = hardwareMap.get(DcMotorEx.class, "shooter");
             shooter.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
             ticksPerRotation = shooter.getMotorType().getTicksPerRev();
@@ -161,7 +162,8 @@ public class TestSimpleAutoRed extends LinearOpMode {
                     shooter.setPower(0);
                     servoTwo.setPower(0);
                     servoOne.setPower(0);
-                    hoodServo.setPosition(.125);
+                    hoodServo.setPosition(.120);
+                    hoodServo2.setPosition(.575);
                 }
 
                 if (timer.seconds() > 5.6 && timer.seconds() < 7.2){

@@ -142,7 +142,7 @@ public class TestSimpleAuto extends LinearOpMode {
 
 
 
-        public class rangedShoot implements Action {  // not working rn
+        public class rangedShootOLD implements Action {  // not working rn
             private boolean initialized = false;
 
             private int phase = 0;
@@ -155,6 +155,7 @@ public class TestSimpleAuto extends LinearOpMode {
             private double blabhblag;
             private ElapsedTime profileTimer = new ElapsedTime();
             private ElapsedTime timer2 = new ElapsedTime();
+            private boolean shootable = false;
 
             // actions are formatted via telemetry packets as below
             @Override
@@ -180,6 +181,7 @@ public class TestSimpleAuto extends LinearOpMode {
                 shooter.setVelocity((currentRPM / 60) * 28);
                 //timer.reset();
                 if (timer.seconds() >4 && timer.seconds() <10) {
+
                     tarPM = 1;
                 } else {
                     tarPM = 0;
@@ -188,9 +190,10 @@ public class TestSimpleAuto extends LinearOpMode {
                 if (phase == 1 && (ticksperrev < targetRPM + 15 && ticksperrev > targetRPM - 15) && blabhblag < 2) {
                     timer2.reset();
                     phase = 2;
-                    blabhblag = blabhblag +1;
+
                 } else if (phase == 2 && timer2.seconds() > .25) {
                     phase = 1;
+                    //shootable = false;
                 }
 
 
@@ -207,13 +210,14 @@ public class TestSimpleAuto extends LinearOpMode {
 
                 switch (phase) {
                     case 1:
-                        servoTwo.setPower(0);
-                        servoOne.setPower(0);
+                        servoTwo.setPower(-.25);
+                        servoOne.setPower(.25);
                         break;
                     case 2:
                         servoOne.setPower(-.25);
                         servoTwo.setPower(.25);
                         break;
+
                     default:
                         servoTwo.setPower(0);
                         servoOne.setPower(0);
@@ -227,6 +231,121 @@ public class TestSimpleAuto extends LinearOpMode {
 
                 telemetry.addData("profileTimer", profileTimer.seconds());
                 telemetry.addData("time2", timer2.seconds());
+                telemetry.addData("time", timer.seconds());
+                telemetry.addData("phase", phase);
+                telemetry.addData("ticksperrev", ticksperrev);
+                telemetry.addData("blah", blabhblag);
+
+                telemetry.update();
+                drive.updatePoseEstimate();
+
+                return opModeIsActive(); //true;
+            }
+
+        }
+
+        public class rangedShoot implements Action {  // not working rn
+            private boolean initialized = false;
+
+            private int phase = 0;
+            private int mphase = 0;
+            private boolean servoing;
+
+
+            // actions are formatted via telemetry packets as below
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+
+
+
+                //powers on motor, if it is not on
+                if (!initialized) {
+                    initialized = true;
+                    timer.reset();
+                    shooter.setPower(0);
+                    servoTwo.setPower(0);
+                    servoOne.setPower(0);
+                    hoodServo.setPosition(.120);
+                    hoodServo2.setPosition(.575);
+                }
+
+                if (timer.seconds() > 5.6 && timer.seconds() < 7.2){
+                    hoodServo.setPosition(0.125);
+                } else if (timer.seconds() > 7.25 && timer.seconds() < 9) {
+                    hoodServo.setPosition(0.13);
+                } else {
+                    hoodServo.setPosition(0.125);
+                }
+
+
+
+                //timer.reset();
+                if (timer.seconds() > 7.2 && timer.seconds() < 9.65) { //3rd ball
+                    mphase = 2;
+                } else if (timer.seconds() > 5.6 && timer.seconds() < 7.15) { //2nd
+                    mphase = 4;
+                } else if (timer.seconds() > 4 && timer.seconds() < 5.6) { //1st
+                    mphase = 3;
+                } else {
+                    mphase = 1;
+                }
+
+                if ((timer.seconds() > 5.25 && timer.seconds() < 5.6) || (timer.seconds() > 7 && timer.seconds() < 7.35) || (timer.seconds() > 8.75 && timer.seconds() < 9.5)) {
+                    phase = 2; // load
+                    servoing = true;
+                } else {
+                    phase = 1; // idle
+                    servoing = false;
+                }
+
+
+
+
+                switch (phase){
+                    case 1: // waiting
+                        servoTwo.setPower(0);
+                        servoOne.setPower(0);
+                        break;
+                    case 2: //loading
+                        servoTwo.setPower(.2); //.65
+                        servoOne.setPower(-0.2);
+                        break;
+                    case 3: //loading
+                        servoTwo.setPower(.5);
+                        servoOne.setPower(-.5);
+                        break;
+                    case 4:
+                        servoOne.setPower(.85);
+                        servoTwo.setPower(-.85);
+                        break;
+                    default:
+                        servoTwo.setPower(0);
+                        servoOne.setPower(0);
+                }
+
+                switch (mphase){
+                    case 1: // waiting
+                        shooter.setVelocity(0);
+                        break;
+                    case 2: //3rd ball
+                        shooter.setVelocity(ticksPerRotation/(1.1766/.65)); //625
+                        break;
+                    case 3: //1st
+                        shooter.setVelocity(ticksPerRotation/(1.1766/.55)); //525
+                        break;
+                    case 4: //2nd
+                        shooter.setVelocity(ticksPerRotation/(1.1766/.65)); //625
+                        break;
+                    default:
+                        //motor.setPower(0);
+                }
+
+
+                packet.fieldOverlay().setStroke("#3F51B5");
+                Drawing.drawRobot(packet.fieldOverlay(), localizerPose);
+                FtcDashboard.getInstance().sendTelemetryPacket(packet);
+
+                telemetry.addData("loading", servoing);
                 telemetry.addData("time", timer.seconds());
 
                 telemetry.update();
