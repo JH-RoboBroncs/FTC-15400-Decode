@@ -90,12 +90,6 @@ public class DriveShooterFC extends LinearOpMode {
         while (opModeIsActive()){
             LLResult llresult = limelight.getLatestResult();
 
-
-
-
-
-
-
             YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
             double heading = orientation.getYaw(AngleUnit.RADIANS);
             limelight.updateRobotOrientation(heading);

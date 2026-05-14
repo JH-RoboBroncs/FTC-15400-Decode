@@ -34,6 +34,9 @@ import java.util.List;
 @Autonomous
 public class TestSimpleAuto extends LinearOpMode {
 
+    enum Team{blue, red}
+    Team currentTeam = Team.blue;
+
     //private Limelight3A limelight;
 
     private ElapsedTime timer = new ElapsedTime();
@@ -91,6 +94,7 @@ public class TestSimpleAuto extends LinearOpMode {
                 //powers on motor, if it is not on
                 if (!initialized) {
                     initialized = true;
+                    if (gamepad1.a) currentTeam = Team.red;
                 }
 
                     double robotYaw = drive.localizer.getPose().heading.toDouble();
@@ -482,4 +486,3 @@ public class TestSimpleAuto extends LinearOpMode {
 
 
 }
-//miles was here

@@ -24,4 +24,5 @@ public class Lift {
 
         Lift.setPower(power);
     }
+
 }

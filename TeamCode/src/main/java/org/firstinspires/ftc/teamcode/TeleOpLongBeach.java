@@ -16,6 +16,8 @@ import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.LLStatus;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.mechanisms.StarterBotShoot2;
 
 import java.util.List;
@@ -35,7 +37,7 @@ public class TeleOpLongBeach extends LinearOpMode {
     private Servo Hood;
     private Servo hood2;
     boolean shootingSingle = false;
-    boolean sensToggle = true;
+
 
 
     private int hoodAngle = 0;
@@ -46,9 +48,7 @@ public class TeleOpLongBeach extends LinearOpMode {
 
     private double currentRPM;
 
-    private double LLHeight = 0;
-    private double LLAngle = 0;
-    private double ATHeight = 74.95;
+
     private double distance;
 
 
@@ -76,7 +76,28 @@ public class TeleOpLongBeach extends LinearOpMode {
         while (opModeIsActive()) {
             LLResult llresult = limelight.getLatestResult();
 
-            if (sensToggle) {
+
+            if (llresult.isValid()) {
+                List<LLResultTypes.FiducialResult> fiducialResults = llresult.getFiducialResults();
+
+                for (LLResultTypes.FiducialResult fr : fiducialResults) {
+                    if (fr.getFiducialId() == 20 || fr.getFiducialId() == 24) {
+                        distance = getDistance(llresult.getTa());
+
+                        if (distance < 210 && distance > 180){
+                            hoodAngle = 2;
+                        } else if (distance < 180 && distance > 90){
+                            hoodAngle = 1;
+                        }
+
+                    }
+                }
+            } else {
+                telemetry.addData("No Target", "Found");
+            }
+
+
+
                 drive.setDrivePowers(new PoseVelocity2d(
                         new Vector2d(
                                 -gamepad1.left_stick_y * 0.85,
@@ -84,33 +105,7 @@ public class TeleOpLongBeach extends LinearOpMode {
                         ),
                         -gamepad1.right_stick_x * 1.25
                 ));
-            } else {
-                drive.setDrivePowers(new PoseVelocity2d(
-                        new Vector2d(
-                                -gamepad1.left_stick_y * 0.325,
-                                -gamepad1.left_stick_x * 0.325
-                        ),
-                        -gamepad1.right_stick_x * .25
-                ));
-            }
 
-
-            LLStatus status = limelight.getStatus();
-
-
-            if (llresult.isValid()) {
-                List<LLResultTypes.FiducialResult> fiducialResults = llresult.getFiducialResults();
-                for (LLResultTypes.FiducialResult fr : fiducialResults) {
-                    if (fr.getFiducialId() == 20 || fr.getFiducialId() == 24) {
-                        distance = getDistance(llresult.getTy());
-                         telemetry.addData("Distance (cm)", distance);
-            }
-                }
-                    } else {
-                         telemetry.addData("No Target", "Found");
-            }
-
-            ticksperrev = motor.getVelocity() / 28 * 60;
 
 
 
@@ -143,12 +138,12 @@ public class TeleOpLongBeach extends LinearOpMode {
 
                     Hood.setPosition(0);
                     break;
-                case 1:
+                case 1: // ~100cm
                     targetRPM = 2800;
                     hood2.setPosition(.58); //.58
                     Hood.setPosition(.110);
                     break;
-                case 2:
+                case 2: // ~200cm
                     targetRPM = 3100;
                     hood2.setPosition(.575); //.575
                     Hood.setPosition(.120);
@@ -177,11 +172,11 @@ public class TeleOpLongBeach extends LinearOpMode {
 
 
 
+            ticksperrev = motor.getVelocity() / 28 * 60;
 
             if (shootingSingle) {
 
                 currentRPM = motion_profile(targetRPM / 3, targetRPM, profileTimer.seconds());
-
                 motor.setVelocity((currentRPM / 60) * 28);
 
                 if (phase == 1 && (ticksperrev < targetRPM + 15 && ticksperrev > targetRPM - 15)) {
@@ -200,6 +195,9 @@ public class TeleOpLongBeach extends LinearOpMode {
 
 
             telemetry.addData("hood angle phase", hoodAngle);
+            telemetry.addData("Distance (cm) w/ tA", distance);
+            telemetry.addData("ty", llresult.getTy());
+            telemetry.addData("tA", llresult.getTa());
 
 
 
@@ -211,11 +209,13 @@ public class TeleOpLongBeach extends LinearOpMode {
 
 
 
-    double getDistance(double ty) {
-        double heightDifference = ATHeight - LLHeight;
-        double angleToTarget = LLAngle + ty;
+    double getDistance(double tA) {
+        double scale = 37010.51;
+        double A = (scale/tA);
+        double B = (1/2.029652);
+        double distance = (Math.pow(A, B));
 
-        return heightDifference/Math.tan(Math.toRadians(angleToTarget));
+        return distance;
     }
 
     double motion_profile(double maxAcceleration, double maxVelocity, double elapsed_time) {
