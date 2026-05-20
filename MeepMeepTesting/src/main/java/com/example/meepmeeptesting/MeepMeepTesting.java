@@ -16,16 +16,53 @@ public class MeepMeepTesting {
                 .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 15)
                 .build();
 
-        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(60, -12, Math.toRadians(180)))
-                .waitSeconds(1)
-                .setTangent(180)
+         myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(60, -12, Math.toRadians(180))) // BLUE AUTO
+               .setTangent(180)
                 .strafeTo(new Vector2d(0,-12))
-                //.splineToConstantHeading(new Vector2d(-50, -43), (3 * Math.PI / 2));
-                .splineToLinearHeading(new Pose2d(-24, -24 , Math.toRadians(230)), (Math.PI / 2)) // -55,-55
-                .waitSeconds(9.5)
-                .setTangent(0)
-                .splineToLinearHeading(new Pose2d(36, -12 , Math.toRadians(180)), (Math.PI / 2)) // -55,-55
+                .strafeToLinearHeading(new Vector2d(-24, -24), Math.toRadians(225))
+                .waitSeconds(5) //4.25
+
+            /*    .strafeToLinearHeading(new Vector2d(36, -23), Math.toRadians(90))
+                .strafeTo(new Vector2d(36,-50))
+                .strafeTo(new Vector2d(36,-23))
+                .strafeToLinearHeading(new Vector2d(-24, -24), Math.toRadians(225))
+                .waitSeconds(4.25) */
+
+                 .strafeToLinearHeading(new Vector2d(-9.5, -23), Math.toRadians(90))
+                 .strafeTo(new Vector2d(-9.5,-50))
+                 .strafeTo(new Vector2d(-9.5,-23))
+                 .strafeToLinearHeading(new Vector2d(-24, -24), Math.toRadians(225))
+                 .waitSeconds(5) //4.25
+
+                .strafeToLinearHeading(new Vector2d(13,-23), Math.toRadians(90))
+                .strafeTo(new Vector2d(13,-50))
+                .strafeTo(new Vector2d(13,-23))
+                .strafeToLinearHeading(new Vector2d(-24, -24), Math.toRadians(225))
                 .build());
+
+        /* myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(60, 12, Math.toRadians(180))) // RED AUTO
+                .setTangent(180)
+                .strafeTo(new Vector2d(0,12))
+                .strafeToLinearHeading(new Vector2d(-24, 24), Math.toRadians(135))
+                .waitSeconds(4.25)
+
+               /* .strafeToLinearHeading(new Vector2d(36, 23), Math.toRadians(270))
+                .strafeTo(new Vector2d(36,50))
+                .strafeTo(new Vector2d(36,23))
+                .strafeToLinearHeading(new Vector2d(-24, 24), Math.toRadians(135))
+                .waitSeconds(4.25) */
+
+              /*  .strafeToLinearHeading(new Vector2d(-9.5, 23), Math.toRadians(90))
+                .strafeTo(new Vector2d(-9.5,50))
+                .strafeTo(new Vector2d(-9.5,23))
+                .strafeToLinearHeading(new Vector2d(-24, 24), Math.toRadians(225))
+                .waitSeconds(5)
+
+                .strafeToLinearHeading(new Vector2d(13,23), Math.toRadians(270))
+                .strafeTo(new Vector2d(13,50))
+                .strafeTo(new Vector2d(13,23))
+                .strafeToLinearHeading(new Vector2d(-24, 24), Math.toRadians(135))
+                .build()); */
 
         meepMeep.setBackground(MeepMeep.Background.FIELD_DECODE_OFFICIAL)
                 .setDarkMode(true)
