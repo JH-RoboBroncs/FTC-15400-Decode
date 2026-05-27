@@ -58,19 +58,19 @@ public final class MecanumDrive {
         // TODO: fill in these values based on
         //   see https://ftc-docs.firstinspires.org/en/latest/programming_resources/imu/imu.html?highlight=imu#physical-hub-mounting
         public RevHubOrientationOnRobot.LogoFacingDirection logoFacingDirection =
-                RevHubOrientationOnRobot.LogoFacingDirection.LEFT;
+                RevHubOrientationOnRobot.LogoFacingDirection.BACKWARD;
         public RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection =
-                RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
+                RevHubOrientationOnRobot.UsbFacingDirection.RIGHT;
 
         // drive model parameters
-        public double inPerTick = 0.00295;
-        public double lateralInPerTick = 0.0022971480671740026;
-        public double trackWidthTicks = 4235.110954556321;
+        public double inPerTick = .00293607391; //.00295
+        public double lateralInPerTick = 0.004113518027553974;
+        public double trackWidthTicks = 3912.98062395;
 
         // feedforward parameters (in tick units)
-        public double kS = 1.0743986161360188;
-        public double kV = 0.0004004430732711433;
-        public double kA = 0.000125;
+        public double kS = 1.0929185139292763; //1.5429185139292763; //1.0743986161360188;
+        public double kV = 0.00029570473794158945; //0.00046570473794158945; //0.0004004430732711433;
+        public double kA = 0.000165; //0.000125;
 
         // path profile parameters (in inches)
         public double maxWheelVel = 50;
@@ -82,9 +82,9 @@ public final class MecanumDrive {
         public double maxAngAccel = Math.PI;
 
         // path controller gains
-        public double axialGain = 5.0;
+        public double axialGain = 6.0;
         public double lateralGain = 5.0;
-        public double headingGain = 10.0; // shared with turn
+        public double headingGain = 5.0; // shared with turn
 
         public double axialVelGain = 0.0;
         public double lateralVelGain = 0.0;

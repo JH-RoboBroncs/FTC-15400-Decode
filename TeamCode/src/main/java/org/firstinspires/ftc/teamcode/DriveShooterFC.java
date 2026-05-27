@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -19,6 +20,7 @@ import java.util.List;
 
 //Name and Position
 @TeleOp(name = "Drive + Shooter FC(Full Power)", group = "Linear OpMode")
+@Disabled
 public class DriveShooterFC extends LinearOpMode {
     Limelight3A limelight;
     private double LLHeight = 27.2;
