@@ -8,6 +8,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -19,23 +21,28 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import java.util.List;
 
 //Name and Position
-@TeleOp(name = "Drive + Shooter FC(Full Power)", group = "Linear OpMode")
-@Disabled
+@TeleOp(name = "RoachBotLongBeach", group = "Linear OpMode")
 public class DriveShooterFC extends LinearOpMode {
     Limelight3A limelight;
-    private double LLHeight = 27.2;
-    private double LLAngle = 0;
-    private double ATHeight = 76;
     private double distance;
+    boolean shootingSingle = false;
+    private double currentRPM;
+    private double targetRPM = 2800;
+
 
     // Drive motors
-    private DcMotor frontLeftDrive, backLeftDrive, frontRightDrive, backRightDrive;
+    private DcMotor frontLeftDrive, backLeftDrive, backRightDrive;
+    private DcMotorEx shooter;
+    private CRServo frontRightDrive;
+    private Servo hood2, Hood;
 
     // Shooter
-    private CRServo shooter;
     private Servo toe;
     private boolean toeMoving = false;
     private ElapsedTime toeTimer = new ElapsedTime();
+    private ElapsedTime profileTimer = new ElapsedTime();
+    private ElapsedTime timer = new ElapsedTime();
+    private double ticksperrev;
 
     // IMU
     private IMU imu;
@@ -47,10 +54,12 @@ public class DriveShooterFC extends LinearOpMode {
         // Motor Name class
         frontLeftDrive = hardwareMap.get(DcMotor.class, "leftFront");
         backLeftDrive = hardwareMap.get(DcMotor.class, "leftBack");
-        frontRightDrive = hardwareMap.get(DcMotor.class, "rightFront");
+        frontRightDrive = hardwareMap.get(CRServo.class, "rightFront");
         backRightDrive = hardwareMap.get(DcMotor.class, "rightBack");
 //shooter name and servo shoot
-        shooter = hardwareMap.get(CRServo.class, "Shooter");
+        shooter = hardwareMap.get(DcMotorEx.class, "Shooter");
+        Hood = hardwareMap.get(Servo.class, "hoodServo");
+        hood2 = hardwareMap.get(Servo.class, "hoodServo2");
         toe = hardwareMap.get(Servo.class, "toe");
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
 
@@ -61,6 +70,8 @@ public class DriveShooterFC extends LinearOpMode {
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         frontRightDrive.setDirection(DcMotor.Direction.FORWARD);
         backRightDrive.setDirection(DcMotor.Direction.FORWARD);
+
+        shooter.setDirection(DcMotor.Direction.REVERSE);
 
    //shooter and servo name and derection + Servo movement
         toe.setDirection(Servo.Direction.REVERSE);
@@ -104,6 +115,8 @@ public class DriveShooterFC extends LinearOpMode {
                     if (fr.getFiducialId() == 20 || fr.getFiducialId() == 24) {
                         distance = getDistance(llresult.getTa());
 
+                        targetRPM = llRPM(distance);
+
                         telemetry.addData("Distance (cm) w/ tA", distance);
                         telemetry.addData("ty", llresult.getTy());
                         telemetry.addData("tA", llresult.getTa());
@@ -114,10 +127,18 @@ public class DriveShooterFC extends LinearOpMode {
                 telemetry.addData("No Target", "Found");
             }
 
+            if (gamepad1.dpad_up) {
+                hood2.setPosition(.68); //.58
+                Hood.setPosition(0);
+            } if (gamepad1.dpad_down){
+                hood2.setPosition(.595); //.58
+                Hood.setPosition(.085);
+            }
+
 
             double y = -gamepad1.left_stick_y; // forward/back
             double x = -gamepad1.left_stick_x; // strafe
-            double rx = gamepad1.right_stick_x; // rotation
+            double rx = gamepad1.right_stick_x / 3; // rotation
 
 
             double rotX = x * Math.cos(heading) - y * Math.sin(heading);
@@ -147,38 +168,41 @@ public class DriveShooterFC extends LinearOpMode {
             backLeftDrive.setPower(backLeftPower);
             backRightDrive.setPower(backRightPower);
 //rest of controls
-    
-            // Start toe motion
-            if (gamepad1.left_bumper && !toeMoving) {
-                toe.setPosition(0.0);
-                toeTimer.reset();
-                toeMoving = true;
+
+
+            if (gamepad1.b && !shootingSingle) {
+                profileTimer.reset();
+                shootingSingle = true;
+                timer.reset();
             }
 
-            // After 1 second, return toe
-            if (toeMoving && toeTimer.seconds() >= 1.0) {
-                toe.setPosition(0.5);
-                toeMoving = false;
+            if (gamepad1.x && !shootingSingle) {
+                shooter.setPower(-.5);
             }
 
-            // Manual reset
-            if (gamepad1.y) {
-                toe.setPosition(0.5);
-                toeMoving = false;
+            ticksperrev = shooter.getVelocity() / 28 * 60;
+
+            if (shootingSingle) {
+
+                currentRPM = motion_profile(targetRPM / 3, targetRPM, profileTimer.seconds());
+                shooter.setVelocity((currentRPM / 60) * 28);
+
+                if (!toeMoving && (ticksperrev < targetRPM + 15 && ticksperrev > targetRPM - 15)) {
+                    timer.reset();
+                    toe.setPosition(0);
+                    toeMoving = true;
+                } else if (toeMoving && timer.seconds() > .25) {
+                    shootingSingle = false;
+                    toe.setPosition(0.55);
+                    toeMoving = false;
+                }
+
+
+            } else {
+                toe.setPosition(0.55);
+                shooter.setVelocity(0);
             }
-        if (gamepad1.right_bumper) {
-                shooter.setPower(-3.9);   // shoot
-            } 
-            else if (gamepad1.x) {
-                shooter.setPower(.5);
-            }
-            else {
-                shooter.setPower(0);
-            }
-            if (toeMoving && toeTimer.seconds() >= 1.0) {
-             toe.setPosition(0.5);
-             toeMoving = false;
-            }
+
             // Reset heading
             if (gamepad1.options) imu.resetYaw();
 
@@ -186,15 +210,10 @@ public class DriveShooterFC extends LinearOpMode {
             telemetry.addData("Heading (deg)", Math.toDegrees(heading));
             telemetry.addData("Toe Moving", toeMoving);
             telemetry.addData("Run Time", runtime.toString());
+            telemetry.addData("shooter velocity", shooter.getVelocity());
+            telemetry.addData("targetRPM", targetRPM);
             telemetry.update();
         }
-    }
-
-    double getDistanceOLDDONOTUSE(double ty) {
-        double heightDifference = ATHeight - LLHeight;
-        double angleToTarget = LLAngle + ty;
-
-        return heightDifference/Math.tan(Math.toRadians(angleToTarget));
     }
 
 
@@ -205,6 +224,20 @@ public class DriveShooterFC extends LinearOpMode {
         double distance = (Math.pow(A, B));
 
         return distance;
+    }
+
+    double motion_profile(double maxAcceleration, double maxVelocity, double elapsed_time) {
+        double acceleration_dt = maxVelocity / maxAcceleration;
+
+        if (elapsed_time < acceleration_dt) return maxAcceleration * elapsed_time;
+
+        return maxVelocity;
+    }
+
+    double llRPM(double distanceGiven) { //testing stuff
+        double LLrpm = 1343.679 + 836.8928 * Math.exp(0.00410771*distanceGiven);
+
+        return Math.round(LLrpm) * 1.5;
     }
 
 }

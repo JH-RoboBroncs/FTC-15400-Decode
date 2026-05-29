@@ -134,6 +134,8 @@ public class LongBeachAuto extends LinearOpMode {
 
         AprilTagss aprilTags = new AprilTagss();
 
+
+            //not the most efficient but it prob works
         if (gamepad1.rightBumperWasReleased()) { // RED SIDE
             ng = 1;
             intakeAngle = Math.toRadians(270);
@@ -163,7 +165,8 @@ public class LongBeachAuto extends LinearOpMode {
                 .strafeTo(new Vector2d(13,(ng*50)))
                 .strafeTo(new Vector2d(13,(ng*23)))
                 .stopAndAdd(aprilTags.intake(0))
-                .strafeToLinearHeading(new Vector2d(-24, (ng*24)), shotAngle);
+                .strafeToLinearHeading(new Vector2d(-24, (ng*24)), shotAngle)
+                .stopAndAdd(aprilTags.shooting());
 
 
 
@@ -177,8 +180,7 @@ public class LongBeachAuto extends LinearOpMode {
                         aprilTags.shooting(),
                         intakeOne.build(),
                         aprilTags.shooting(),
-                        intakeTwo.build(),
-                        aprilTags.shooting()
+                        intakeTwo.build()
                 ))
         );
 
